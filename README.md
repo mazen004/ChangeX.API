@@ -1,2 +1,2 @@
-# ChangeX BackEnd
+# ChangeX API
 Change Request Management System

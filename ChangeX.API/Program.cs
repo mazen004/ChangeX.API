@@ -19,6 +19,8 @@ namespace ChangeX.API
             if (app.Environment.IsDevelopment())
             {
                 app.MapOpenApi();
+                app.UseSwaggerUI(options =>
+               options.SwaggerEndpoint("/openapi/v1.json", "ChangeX"));
             }
 
             app.UseHttpsRedirection();

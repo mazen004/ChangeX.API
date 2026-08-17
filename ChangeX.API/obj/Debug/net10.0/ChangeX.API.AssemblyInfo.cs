@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ChangeX.API")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+cbe89d9c912b3815d2da898359c69327b9903616")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b370216ae6a5fec8c677a051202e0cc39693a790")]
 [assembly: System.Reflection.AssemblyProductAttribute("ChangeX.API")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ChangeX.API")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

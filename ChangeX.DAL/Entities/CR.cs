@@ -7,13 +7,9 @@ namespace ChangeX.DAL.Entities
     {
         [Key]
         public Guid ID { get; set; }
-
         public string Name { get; set; } = string.Empty;
-
         public string Priority { get; set; } = string.Empty;
-
         public string Scope { get; set; } = string.Empty;
-
         public string Description { get; set; } = string.Empty;
 
         [ForeignKey(nameof(CurrentStatus))]

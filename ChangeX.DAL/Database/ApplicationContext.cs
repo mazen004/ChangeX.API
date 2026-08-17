@@ -3,7 +3,7 @@ using ChangeX.DAL.Entities;
 
 namespace ChangeX.DAL.Database
 {
-    public class ApplicationContext
+    public class ApplicationContext : DbContext
     {
         public DbSet<Client> Clients { get; set; }
         public DbSet<CR> CRs { get; set; }

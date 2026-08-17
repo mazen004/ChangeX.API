@@ -1,3 +1,5 @@
 <Solution>
   <Project Path="ChangeX.API/ChangeX.API.csproj" />
+  <Project Path="ChangeX.BLL/ChangeX.BLL.csproj" />
+  <Project Path="ChangeX.DAL/ChangeX.DAL.csproj" />
 </Solution>

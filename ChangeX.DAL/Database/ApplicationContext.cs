@@ -5,6 +5,10 @@ namespace ChangeX.DAL.Database
 {
     public class ApplicationContext : DbContext
     {
+        public ApplicationContext(DbContextOptions<ApplicationContext> options)
+        : base(options)
+        {
+        }
         public DbSet<Client> Clients { get; set; }
         public DbSet<CR> CRs { get; set; }
         public DbSet<CRStatus> CRStatues { get; set; }

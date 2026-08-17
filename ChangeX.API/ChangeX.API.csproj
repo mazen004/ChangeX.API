@@ -20,6 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Controllers\Client\" />
     <Folder Include="Controllers\Admin\" />
   </ItemGroup>
 

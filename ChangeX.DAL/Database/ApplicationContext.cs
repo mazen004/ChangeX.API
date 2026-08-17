@@ -16,5 +16,6 @@ namespace ChangeX.DAL.Database
         public DbSet<Invoice> Invoices { get; set; }
         public DbSet<Project> Projects { get; set; }
         public DbSet<User> Users { get; set; }
+        public object StatusWorkflows { get; set; }
     }
 }

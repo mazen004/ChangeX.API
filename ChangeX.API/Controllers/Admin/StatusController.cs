@@ -1,6 +1,6 @@
 ﻿using ChangeX.DAL.Database;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace ChangeX.API.Controllers.Admin
 {
@@ -8,39 +8,36 @@ namespace ChangeX.API.Controllers.Admin
     [ApiController]
     public class StatusController : ControllerBase
     {
-        private readonly ApplicationContext dbcontext;
+        private readonly ApplicationContext _dbContext;
 
-        public StatusController(ApplicationContext dbcontext) {
-            this.dbcontext = dbcontext;
+        public StatusController(ApplicationContext dbContext)
+        {
+            _dbContext = dbContext;
         }
 
-        [HttpGet]
-        [Route("{id:int}")]
-       public IActionResult GetAvailableStatus(int id )
+        [HttpGet("{id:guid}")]
+        public async Task<IActionResult> GetAvailableStatus(Guid id)
         {
+            var currentStatus = await _dbContext.CRStatues
+                .AsNoTracking()
+                .FirstOrDefaultAsync(status => status.ID == id);
 
-
-            var currentStatus = dbcontext.CRStatues.Find(id);
-
-                if (currentStatus == null)
-                {
-                    return NotFound(new { message = $"No status found" });
-                }
-                var availableStatuses = currentStatus.AvailableStatuses
-                    .Split(',', StringSplitOptions.RemoveEmptyEntries)
-                    .Select(s => s.Trim())
-                    .ToList();
-
-                return Ok(new
-                {
-                    id = currentStatus.ID,
-                    currentStatus = currentStatus.CurrentStatus,
-                    availableStatuses,
-                    accessedBy = currentStatus.AccessedBy
-                });
+            if (currentStatus is null)
+            {
+                return NotFound(new { message = "No status found" });
             }
 
-      
+            var availableStatuses = currentStatus.AvailableStatuses
+                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .ToList();
 
+            return Ok(new
+            {
+                id = currentStatus.ID,
+                currentStatus = currentStatus.CurrentStatus,
+                availableStatuses,
+                accessedBy = currentStatus.AccessedBy
+            });
         }
     }
+}

@@ -1,25 +1,44 @@
 ﻿using ChangeX.BLL.DTOs;
+using ChangeX.BLL.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ChangeX.API.Controllers.Admin
 {
-    public class ChangeStatusController : Controller
+    [Route("api/[controller]")]
+    [ApiController]
+    public class ChangeStatusController : ControllerBase
     {
-        public IActionResult Index()
+        private readonly ICRService _crService;
+
+        public ChangeStatusController(ICRService crService)
         {
-            return View();
+            _crService = crService;
         }
+
         [HttpPost("change")]
-        public async Task<IActionResult> ChangeStatus(ChangeStatusDto dto)
+        public async Task<IActionResult> ChangeStatus([FromBody] ChangeStatusDto dto)
         {
             try
             {
-                var cr = await CRService.ChangeStatusAsync(dto.CRID, dto.TargetStatus, dto.ActorRole);
+                var cr = await _crService.ChangeStatusAsync(
+                    dto.CRID,
+                    dto.TargetStatus,
+                    dto.ActorRole);
+
                 return Ok(new { message = "Status changed", data = cr });
             }
-            catch (KeyNotFoundException ex) { return NotFound(new { message = ex.Message }); }
-            catch (InvalidOperationException ex) { return BadRequest(new { message = ex.Message }); }
-            catch (UnauthorizedAccessException ex) { return Forbid(ex.Message); }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Forbid();
+            }
         }
     }
 }

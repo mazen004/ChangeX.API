@@ -1,7 +1,7 @@
 ﻿using ChangeX.DAL.Database;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using ChangeX.BLL.DTOs;
+using Microsoft.EntityFrameworkCore;
 
 
 namespace ChangeX.API.Controllers.Client
@@ -10,38 +10,44 @@ namespace ChangeX.API.Controllers.Client
     [ApiController]
     public class ClientController : ControllerBase
     {
-        private readonly ApplicationContext dbcontext;
+        private readonly ApplicationContext _dbContext;
 
-        public ClientController(ApplicationContext dbcontext)
+        public ClientController(ApplicationContext dbContext)
         {
-            this.dbcontext = dbcontext;
+            _dbContext = dbContext;
         }
 
         [HttpGet]
-        public IActionResult GetClients()
+        public async Task<IActionResult> GetClients()
         {
-            // Logic to retrieve clients from the database
-            return Ok(new { message = "Get all clients", data= dbcontext.Clients.ToList()});
+            var clients = await _dbContext.Clients
+                .AsNoTracking()
+                .ToListAsync();
+
+            return Ok(new { message = "Get all clients", data = clients });
         }
 
-        [HttpGet("{id}")]
-        public IActionResult GetClientById(Guid id)
+        [HttpGet("{id:guid}")]
+        public async Task<IActionResult> GetClientById(Guid id)
         {
-            // Logic to retrieve a specific client from the database
-            var client = dbcontext.Clients.Find(id);
-            if (client == null)
+            var client = await _dbContext.Clients
+                .AsNoTracking()
+                .FirstOrDefaultAsync(existingClient => existingClient.ID == id);
+
+            if (client is null)
             {
                 return NotFound(new { message = "Client not found" });
             }
+
             return Ok(new { message = "Client found", data = client });
         }
 
-            [HttpPost]
-        public IActionResult CreateClient(ClientDto clientDto)
+        [HttpPost]
+        public async Task<IActionResult> CreateClient([FromBody] ClientDto clientDto)
         {
-            // Logic to create a new client in the database
             var client = new DAL.Entities.Client()
             {
+                ID = Guid.NewGuid(),
                 Name = clientDto.Name,
                 Email = clientDto.Email,
                 Description = clientDto.Description,
@@ -49,18 +55,19 @@ namespace ChangeX.API.Controllers.Client
                 ContactInfo = clientDto.ContactInfo
             };
 
-            dbcontext.Clients.Add(client);
-            dbcontext.SaveChanges();
+            _dbContext.Clients.Add(client);
+            await _dbContext.SaveChangesAsync();
 
-            return Ok(new { message = "Client created successfully", data = client });
+            return StatusCode(
+                StatusCodes.Status201Created,
+                new { message = "Client created successfully", data = client });
         }
 
-        [HttpPut("{id}")]
-        public IActionResult UpdateClient(Guid id, ClientDto clientDto)
+        [HttpPut("{id:guid}")]
+        public async Task<IActionResult> UpdateClient(Guid id, [FromBody] ClientDto clientDto)
         {
-            // Logic to update an existing client in the database
-            var client = dbcontext.Clients.Find(id);
-            if (client == null)
+            var client = await _dbContext.Clients.FindAsync(id);
+            if (client is null)
             {
                 return NotFound(new { message = "Client not found" });
             }
@@ -71,22 +78,21 @@ namespace ChangeX.API.Controllers.Client
             client.Address = clientDto.Address;
             client.ContactInfo = clientDto.ContactInfo;
 
-            dbcontext.SaveChanges();
+            await _dbContext.SaveChangesAsync();
             return Ok(new { message = "Client updated successfully", data = client });
         }
 
-        [HttpDelete("{id}")]
-        public IActionResult DeleteClient(Guid id)
+        [HttpDelete("{id:guid}")]
+        public async Task<IActionResult> DeleteClient(Guid id)
         {
-            // Logic to delete a client from the database
-            var client = dbcontext.Clients.Find(id);
-            if (client == null)
+            var client = await _dbContext.Clients.FindAsync(id);
+            if (client is null)
             {
                 return NotFound(new { message = "Client not found" });
             }
 
-            dbcontext.Clients.Remove(client);
-            dbcontext.SaveChanges();
+            _dbContext.Clients.Remove(client);
+            await _dbContext.SaveChangesAsync();
             return Ok(new { message = "Client deleted successfully" });
         }
     }

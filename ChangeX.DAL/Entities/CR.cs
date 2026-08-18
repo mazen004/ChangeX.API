@@ -16,10 +16,13 @@ namespace ChangeX.DAL.Entities
         public decimal ManHourRate { get; set; }
         public DateOnly StartDate { get; set; }
         public DateOnly FinishDate { get; set; }
+<<<<<<< HEAD
 
         [ForeignKey(nameof(Detail))]
         public Guid DetailsID { get; set; }
 
+=======
+>>>>>>> 2c2d5eb8291f6a8d0dea5dd44762baeb5b121e48
         [ForeignKey(nameof(CurrentStatus))]
         public Guid CurrentStatusID { get; set; }
 

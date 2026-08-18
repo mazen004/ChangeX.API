@@ -2,7 +2,6 @@ using ChangeX.BLL.DTOs.Users;
 using Microsoft.AspNetCore.Mvc;
 using ChangeX.BLL.Services;
 using AutoMapper;
-using ChangeX.DAL.Database;
 
 namespace ChangeX.API.Controllers.Admin
 {
@@ -10,45 +9,47 @@ namespace ChangeX.API.Controllers.Admin
     [ApiController]
     public class UserAdminController : ControllerBase
     {
-        private readonly ApplicationContext DbContext;
-        private readonly IMapper Mapper;
-        private readonly IUserServices UserServices;
+        private readonly IMapper _mapper;
+        private readonly IUserServices _userServices;
 
-        public UserAdminController(IMapper mapper, IUserServices userServices, ApplicationContext dbContext)
+        public UserAdminController(IMapper mapper, IUserServices userServices)
         {
-            this.DbContext = dbContext;
-            this.Mapper = mapper;
-            this.UserServices = userServices;
-
+            _mapper = mapper;
+            _userServices = userServices;
         }
 
         [HttpGet]
         public async Task<IActionResult> GetUser()
         {
-            var User = await UserServices.GetAll();
-
-            var Data = Mapper.Map<IEnumerable<UserInClientDto>>(User);
-
-            return Ok(Data);
+            var users = await _userServices.GetAll();
+            var data = _mapper.Map<IEnumerable<UserInClientDto>>(users);
+            return Ok(data);
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddUser(AddUserDto userDto)
+        public async Task<IActionResult> AddUser([FromBody] AddUserDto userDto)
         {
             var user = new DAL.Entities.User()
             {
                 Name = userDto.Name,
                 Email = userDto.Email,
-                // Password = userDto.Password,
                 SystemRole = userDto.SystemRole,
                 IsPrimaryContact = userDto.IsPrimaryContact,
                 ClientID = userDto.ClientID
             };
 
-            await DbContext.Users.AddAsync(user);
-            await DbContext.SaveChangesAsync();
+            try
+            {
+                await _userServices.AddUser(user);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
 
-            return Ok(new { message = "User added successfully", data = user });
+            return StatusCode(
+                StatusCodes.Status201Created,
+                new { message = "User added successfully", data = user });
         }
     }
 }

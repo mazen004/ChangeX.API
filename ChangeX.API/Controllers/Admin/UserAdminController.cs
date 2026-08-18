@@ -1,29 +1,39 @@
-using System;
-using ChangeX.DAL.Database;
 using ChangeX.BLL.DTOs.Users;
 using Microsoft.AspNetCore.Mvc;
+using ChangeX.BLL.Services;
+using AutoMapper;
+using ChangeX.DAL.Database;
 
 namespace ChangeX.API.Controllers.Admin
 {
-    [Route("api/[controller]")]
+    [Route("api/admin/[controller]")]
     [ApiController]
     public class UserAdminController : ControllerBase
     {
         private readonly ApplicationContext DbContext;
+        private readonly IMapper Mapper;
+        private readonly IUserServices UserServices;
 
-        public UserAdminController(ApplicationContext DbContext)
+        public UserAdminController(IMapper mapper, IUserServices userServices, ApplicationContext dbContext)
         {
-            this.DbContext = DbContext;
+            this.DbContext = dbContext;
+            this.Mapper = mapper;
+            this.UserServices = userServices;
+
         }
 
         [HttpGet]
-        public IActionResult GetUserAdmin()
+        public async Task<IActionResult> GetUser()
         {
-            return Ok(new { message = "Get all User for Admin", data = DbContext.Users.ToList()});
+            var User = await UserServices.GetAll();
+
+            var Data = Mapper.Map<IEnumerable<UserInClientDto>>(User);
+
+            return Ok(Data);
         }
 
         [HttpPost]
-        public IActionResult AddUser(AddUserDto userDto)
+        public async Task<IActionResult> AddUser(AddUserDto userDto)
         {
             var user = new DAL.Entities.User()
             {
@@ -35,8 +45,8 @@ namespace ChangeX.API.Controllers.Admin
                 ClientID = userDto.ClientID
             };
 
-            DbContext.Users.Add(user);
-            DbContext.SaveChanges();
+            await DbContext.Users.AddAsync(user);
+            await DbContext.SaveChangesAsync();
 
             return Ok(new { message = "User added successfully", data = user });
         }

@@ -6,19 +6,37 @@ namespace ChangeX.BLL.Services
 {
     public class UserServices : IUserServices
     {
-        private readonly ApplicationContext _dbContext;
+        private readonly ApplicationContext DbContext;
 
         public UserServices(ApplicationContext DbContext)
         {
-            _dbContext = DbContext;
+            DbContext = DbContext;
         }
 
-        public async Task<List<User>> GetAll(Guid ClientID, bool search = false)
+        public async Task<IEnumerable<User>> GetAll()
         {
-            return await _dbContext.Users
-                        .Where(u => u.ClientID == ClientID && search)
+            return await DbContext.Users
+                        .Select(u => u)
                         .Include(u => u.Client)
+                        .OrderByDescending((u => u.ID))
+                        //.OrderByDescending((u => u.CreateAt))
                         .ToListAsync();
+        }
+
+        public async Task<IEnumerable<User>> GetAll(Guid ClientID)
+        {
+            return await DbContext.Users
+                        .Where(u => u.ClientID == ClientID)
+                        .Include(u => u.Client)
+                        .OrderByDescending((u => u.ID))
+                        //.OrderByDescending((u => u.CreateAt))
+                        .ToListAsync();
+        }
+
+        public async Task AddUser(User User)
+        {
+            await DbContext.Users.AddAsync(User);
+            await DbContext.SaveChangesAsync();
         }
     }
 }

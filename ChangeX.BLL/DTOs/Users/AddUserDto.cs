@@ -12,6 +12,6 @@ namespace ChangeX.BLL.DTOs.Users
         // public string Password { get; set; } = string.Empty;
         public string SystemRole { get; set; } = string.Empty;
         public bool IsPrimaryContact { get; set; }
-        public Guid ClientID { get; set; }
+        public Guid ClientID { get; set; } = Guid.Empty;
     }
 }

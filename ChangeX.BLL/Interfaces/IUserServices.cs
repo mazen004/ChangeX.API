@@ -4,6 +4,8 @@ namespace ChangeX.BLL.Services
 {
     public interface IUserServices
     {
-        public Task<List<User>> GetAll(Guid ClientID, Boolean search = false);
+        public Task<IEnumerable<User>> GetAll();
+        public Task<IEnumerable<User>> GetAll(Guid ClientID);
+        public Task AddUser(User User);
     }
 }

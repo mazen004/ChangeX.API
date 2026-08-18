@@ -1,4 +1,5 @@
 ﻿using ChangeX.BLL.DTOs;
+using ChangeX.BLL.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,6 +9,8 @@ namespace ChangeX.API.Controllers.Client
     [ApiController]
     public class RequestCRController : ControllerBase
     {
+        private readonly ICRService CRService;
+        public RequestCRController(ICRService crService) => CRService = crService;
 
         [HttpPut("{crId}/clarify")]
         public async Task<IActionResult> ClarifyCR(Guid crId, DetailDto dto)
@@ -25,10 +28,14 @@ namespace ChangeX.API.Controllers.Client
         {
             try
             {
-                var invoice = await CRService.AcceptEstimateAsync(crId);
-                return Ok(new { message = "Estimate accepted", data = invoice });
+                var cr = await CRService.AcceptEstimateAsync(crId);
+                return Ok(new { message = "Estimate accepted", data = cr });
             }
-            catch (Exception ex) { /* handle */ }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            
         }
 
         [HttpPost("{crId}/reject-estimate")]
@@ -39,7 +46,10 @@ namespace ChangeX.API.Controllers.Client
                 var cr = await CRService.RejectEstimateAsync(crId);
                 return Ok(new { message = "Estimate rejected", data = cr });
             }
-            catch (Exception ex) { /* handle */ }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
     }
     }

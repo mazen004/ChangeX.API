@@ -12,7 +12,6 @@ namespace ChangeX.DAL.Entities
         // public string Password { get; set; } = string.Empty;
         public string SystemRole { get; set; } = string.Empty;
         public bool IsPrimaryContact { get; set; }
-        public DateOnly CreatedAt { get; set; }
         //public bool IsActive { get; set; } = true; // softDelete
         //public DateTime? InActiveAt { get; set; }
 

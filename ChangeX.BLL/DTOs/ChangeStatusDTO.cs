@@ -7,7 +7,7 @@ namespace ChangeX.BLL.DTOs
     public class ChangeStatusDto
     {
         public Guid CRID { get; set; }
-        public string TargetStatus { get; set; }
-        public string ActorRole { get; set; } // until auth is added
+        public string TargetStatus { get; set; } = string.Empty;
+        public string ActorRole { get; set; } = string.Empty; // until auth is added
     }
 }

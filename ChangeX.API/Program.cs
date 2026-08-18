@@ -21,6 +21,8 @@ namespace ChangeX.API
 
             builder.Services.AddScoped<IUserServices, UserServices>();
             builder.Services.AddScoped<ICRService, CRService>();
+            builder.Services.AddScoped<IProjectService, ProjectService>();
+
 
             builder.Services.AddAutoMapper(_ => { }, typeof(Program));
 

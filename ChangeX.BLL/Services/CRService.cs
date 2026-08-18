@@ -1,20 +1,28 @@
 ﻿using ChangeX.DAL.Database;
 using ChangeX.DAL.Entities;
+// using ChangeX.BLL.DTOs;
+using ChangeX.BLL.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using ChangeX.BLL.DTOs;
 
 namespace ChangeX.BLL.Services
 {
     
-    public class CRService
+    public class CRService : ICRService
     {
         private readonly ApplicationContext DBContext;
 
         public CRService(ApplicationContext DbContext)
         {
             DBContext = DbContext;
+        }
+
+        public Task<Invoice> AcceptEstimateAsync(Guid crId)
+        {
+            throw new NotImplementedException();
         }
 
         public async Task<CR> ChangeStatusAsync(Guid crId, string targetStatus, string actorRole)
@@ -45,6 +53,26 @@ namespace ChangeX.BLL.Services
             cr.CurrentStatusID = newStatus.ID;
             await DBContext.SaveChangesAsync();
             return cr;
+        }
+
+        public Task<Detail> ClarifyCRAsync(Guid crId, DetailDto dto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<CR> EstimateCRAsync(Guid crId, EstimateCRDto dto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<CR> RejectEstimateAsync(Guid crId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<CR> RequestCRAsync(RequestCRDto dto, Guid clientId)
+        {
+            throw new NotImplementedException();
         }
     }
 }

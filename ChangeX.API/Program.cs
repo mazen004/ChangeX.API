@@ -1,7 +1,7 @@
 using ChangeX.BLL.Services;
 using ChangeX.DAL.Database;
 using ChangeX.BLL.Interfaces;
-using ChangeX.BLL.Services;
+// using ChangeX.BLL.Services;
 using Microsoft.EntityFrameworkCore;
 using AutoMapper;
 namespace ChangeX.API
@@ -10,7 +10,6 @@ namespace ChangeX.API
     {
         public static void Main(string[] args)
         {
-            
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
@@ -20,6 +19,7 @@ namespace ChangeX.API
             builder.Services.AddOpenApi();
 
             builder.Services.AddTransient<IUserServices, UserServices>();
+            builder.Services.AddTransient<ICRService, CRService>();
 
             //builder.Services.AddAutoMapper(typeof(Program));
 

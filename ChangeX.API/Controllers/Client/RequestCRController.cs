@@ -1,4 +1,5 @@
 ﻿using ChangeX.BLL.DTOs;
+using ChangeX.BLL.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,23 +9,48 @@ namespace ChangeX.API.Controllers.Client
     [ApiController]
     public class RequestCRController : ControllerBase
     {
+        private readonly ICRService CRService;
+        public RequestCRController(ICRService crService) => CRService = crService;
 
-        [HttpPost]
-        public async Task<IActionResult> RequestCR([FromQuery] Guid clientId, RequestCRDto dto)
+        [HttpPut("{crId}/clarify")]
+        public async Task<IActionResult> ClarifyCR(Guid crId, DetailDto dto)
         {
             try
             {
-                var cr = await crService.RequestCRAsync(dto, clientId);
-                return Ok(new { message = "Change request submitted", data = cr });
+                var detail = await CRService.ClarifyCRAsync(crId, dto);
+                return Ok(new { message = "Clarification submitted", data = detail });
             }
-            catch (KeyNotFoundException ex)
+            catch (KeyNotFoundException ex) { return NotFound(new { message = ex.Message }); }
+            catch (InvalidOperationException ex) { return BadRequest(new { message = ex.Message }); }
+        }
+        [HttpPost("{crId}/accept-estimate")]
+        public async Task<IActionResult> AcceptEstimate(Guid crId)
+        {
+            try
             {
-                return NotFound(new { message = ex.Message });
+                var cr = await CRService.AcceptEstimateAsync(crId);
+                return Ok(new { message = "Estimate accepted", data = cr });
             }
-            catch (InvalidOperationException ex)
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            
+        }
+
+        [HttpPost("{crId}/reject-estimate")]
+        public async Task<IActionResult> RejectEstimate(Guid crId)
+        {
+            try
+            {
+                var cr = await CRService.RejectEstimateAsync(crId);
+                return Ok(new { message = "Estimate rejected", data = cr });
+            }
+            catch (Exception ex)
             {
                 return BadRequest(new { message = ex.Message });
             }
         }
     }
-}
+    }
+

@@ -36,17 +36,18 @@ namespace ChangeX.BLL.Services
 
         public async Task AddUser(User User)
         {
-            var clientExists = await _dbContext.Clients
-                .AsNoTracking()
-                .AnyAsync(client => client.ID == User.ClientID);
-
-            if (!clientExists)
-            {
-                throw new KeyNotFoundException("Client not found");
-            }
-
             await _dbContext.Users.AddAsync(User);
-            await _dbContext.SaveChangesAsync();
+            _dbContext.SaveChanges();
+        }
+
+        public async Task<bool> CouldBeDefault(Guid ClientID)
+        {
+            return await _dbContext.Users.AnyAsync(c => c.ID == ClientID && !c.IsPrimaryContact);
+        }
+
+        public async Task<bool> IsClientVailed(Guid ClientID)
+        {
+            return await _dbContext.Clients.AnyAsync(c => c.ID == ClientID);
         }
     }
 }

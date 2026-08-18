@@ -20,19 +20,64 @@ namespace ChangeX.API.Controllers.Admin
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetUser()
+        public async Task<IActionResult> GetAllUsers()
         {
-            var users = await _userServices.GetAll();
-            var data = _mapper.Map<IEnumerable<UserAccountDto>>(users);
-            return Ok(data);
+            try
+            {
+                var users = await _userServices.GetAll();
+                var data = _mapper.Map<IEnumerable<UserAccountDto>>(users);
+                return Ok(data);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpGet("Client/{ClientID:Guid}")]
+        public async Task<IActionResult> GetALLUsers(Guid ClientID)
+        {
+            try
+            {
+                var users = await _userServices.GetAll(ClientID);
+                var data = _mapper.Map<IEnumerable<UserAccountDto>>(users);
+                return Ok(data);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         [HttpGet("{ID:Guid}")]
         public async Task<IActionResult> GetUser(Guid ID)
         {
-            var user = await _userServices.GetByID(ID);
-            var data = _mapper.Map<UserAccountDto>(user);
-            return Ok(data);
+            try
+            {
+                var user = await _userServices.GetByID(ID);
+                var data = _mapper.Map<UserAccountDto>(user);
+                return Ok(data);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpGet("Login/{Email}/{Password}")]
+        public async Task<IActionResult> Login(string Email, string Password)
+        {
+            return BadRequest(new { message = "Login is not implemented." });
+            try
+            {
+                var user = await _userServices.Login(Email, Password);
+                var data = _mapper.Map<UserAccountDto>(user);
+                return Ok(data);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         [HttpPost]
@@ -79,6 +124,26 @@ namespace ChangeX.API.Controllers.Admin
                 await _userServices.UpdateUser(user);
 
                 return Ok(user);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpDelete("{ID:Guid}")]
+        public async Task<IActionResult> DeleteUser(Guid ID)
+        {
+            try
+            {
+                var user = await _userServices.GetByID(ID);
+
+                if (user == null)
+                    throw new Exception("User not found.");
+
+                await _userServices.DeleteUser(user);
+
+                return Ok(new { message = "User deleted successfully." });
             }
             catch (Exception ex)
             {

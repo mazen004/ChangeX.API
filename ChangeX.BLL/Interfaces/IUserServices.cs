@@ -8,10 +8,11 @@ namespace ChangeX.BLL.Services
         public Task<IEnumerable<User>> GetAll();
         public Task<IEnumerable<User>> GetAll(Guid ClientID);
         public Task<User> GetByID(Guid ID);
-        public Task<User> GetUserByEmailAndPassword(string Email, string Password);
+        public Task<User> Login(string Email, string Password);
         public Task AddUser(User User);
         public Task<bool> CouldBeDefault(Guid ClientID);
         public Task<bool> IsClientVailed(Guid ClientID);
         public Task<User> UpdateUser(User User);
+        public Task DeleteUser(User User);
     }
 }

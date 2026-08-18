@@ -45,9 +45,17 @@ namespace ChangeX.BLL.Services
             return user;
         }
 
-        public Task<User> GetUserByEmailAndPassword(string Email, string Password)
+        public Task<User> Login(string Email, string Password)
         {
-            throw new NotImplementedException();
+            var user = _dbContext.Users
+                        // .Where(u => u.Email == Email && u.Password == Password)
+                        .Include(u => u.Client)
+                        .FirstOrDefault();
+
+            if (user == null)
+                throw new Exception($"User not found.");
+                
+            return Task.FromResult(user);
         }
 
         public async Task<User> UpdateUser(User User)
@@ -65,12 +73,18 @@ namespace ChangeX.BLL.Services
 
         public async Task<bool> CouldBeDefault(Guid ClientID)
         {
-            return await _dbContext.Users.AnyAsync(c => c.ID == ClientID && c.IsPrimaryContact);
+            return await _dbContext.Users.AnyAsync(u => u.ClientID == ClientID && !u.IsPrimaryContact);
         }
 
         public async Task<bool> IsClientVailed(Guid ClientID)
         {
             return await _dbContext.Clients.AnyAsync(c => c.ID == ClientID);
+        }
+
+        public async Task DeleteUser(User User)
+        {
+            _dbContext.Users.Remove(User);
+            await _dbContext.SaveChangesAsync();
         }
     }
 }

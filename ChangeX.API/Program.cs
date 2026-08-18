@@ -1,6 +1,7 @@
-
+using ChangeX.BLL.Services;
 using ChangeX.DAL.Database;
 using Microsoft.EntityFrameworkCore;
+using AutoMapper;
 namespace ChangeX.API
 {
     public class Program
@@ -14,6 +15,12 @@ namespace ChangeX.API
             builder.Services.AddControllers();
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             builder.Services.AddOpenApi();
+
+            builder.Services.AddTransient<IUserServices, UserServices>();
+
+            //builder.Services.AddAutoMapper(typeof(Program));
+
+            builder.Services.AddCors();
             builder.Services.AddDbContext<ApplicationContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
             var app = builder.Build();
 

@@ -26,7 +26,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ChangeX.BLL\ChangeX.BLL.csproj" />
-    <ProjectReference Include="..\ChangeX.DAL\ChangeX.DAL.csproj" />
   </ItemGroup>
 
 </Project>

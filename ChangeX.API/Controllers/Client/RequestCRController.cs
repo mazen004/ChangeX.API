@@ -9,22 +9,17 @@ namespace ChangeX.API.Controllers.Client
     public class RequestCRController : ControllerBase
     {
 
-        [HttpPost]
-        public async Task<IActionResult> RequestCR([FromQuery] Guid clientId, RequestCRDto dto)
+        [HttpPut("{crId}/clarify")]
+        public async Task<IActionResult> ClarifyCR(Guid crId, DetailDto dto)
         {
             try
             {
-                var cr = await crService.RequestCRAsync(dto, clientId);
-                return Ok(new { message = "Change request submitted", data = cr });
+                var detail = await CRService.ClarifyCRAsync(crId, dto);
+                return Ok(new { message = "Clarification submitted", data = detail });
             }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(new { message = ex.Message });
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
+            catch (KeyNotFoundException ex) { return NotFound(new { message = ex.Message }); }
+            catch (InvalidOperationException ex) { return BadRequest(new { message = ex.Message }); }
         }
     }
-}
+    }
+

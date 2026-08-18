@@ -10,7 +10,7 @@ namespace ChangeX.BLL.DTOs.Users
         public string Name { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string SystemRole { get; set; } = string.Empty;
-        public Guid ClientID { get; set; }
+        public Guid ClientID { get; set; } = Guid.Empty;
         public string ClientName { get; set; } = string.Empty;
     }
 }

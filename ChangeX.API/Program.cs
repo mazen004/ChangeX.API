@@ -1,5 +1,7 @@
 
 using ChangeX.DAL.Database;
+using ChangeX.BLL.Interfaces;
+using ChangeX.BLL.Services;
 using Microsoft.EntityFrameworkCore;
 namespace ChangeX.API
 {
@@ -7,6 +9,7 @@ namespace ChangeX.API
     {
         public static void Main(string[] args)
         {
+
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.

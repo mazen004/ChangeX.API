@@ -1,4 +1,5 @@
 using ChangeX.BLL.DTOs.Users;
+using ChangeX.DAL.Entities;
 using Microsoft.AspNetCore.Mvc;
 using ChangeX.BLL.Services;
 using AutoMapper;
@@ -22,34 +23,37 @@ namespace ChangeX.API.Controllers.Admin
         public async Task<IActionResult> GetUser()
         {
             var users = await _userServices.GetAll();
-            var data = _mapper.Map<IEnumerable<UserInClientDto>>(users);
+            var data = _mapper.Map<IEnumerable<UserAccountDto>>(users);
             return Ok(data);
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddUser([FromBody] AddUserDto userDto)
+        public async Task<IActionResult> AddUser([FromForm] AddUserDto UserDto)
         {
-            var user = new DAL.Entities.User()
-            {
-                Name = userDto.Name,
-                Email = userDto.Email,
-                SystemRole = userDto.SystemRole,
-                IsPrimaryContact = userDto.IsPrimaryContact,
-                ClientID = userDto.ClientID
-            };
-
             try
             {
-                await _userServices.AddUser(user);
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(new { message = ex.Message });
-            }
+                if (!await _userServices.IsClientVailed(UserDto.ClientID))
+                    throw new Exception("InVailed Client ID");
 
-            return StatusCode(
-                StatusCodes.Status201Created,
-                new { message = "User added successfully", data = user });
+                if (!await _userServices.CouldBeDefault(UserDto.ClientID))
+                    throw new Exception("Only one Default Contact per Client");
+
+                var User = _mapper.Map<User>(UserDto);
+
+                await _userServices.AddUser(User);
+
+                return Ok(User);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpPut("{ID:Guid}")]
+        public async Task<IActionResult> UpdateUser(Guid ID)
+        {
+            return Ok();
         }
     }
 }

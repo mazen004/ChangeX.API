@@ -1,8 +1,6 @@
 using ChangeX.BLL.Services;
 using ChangeX.DAL.Database;
 using ChangeX.BLL.Interfaces;
-using ChangeX.BLL.DTOs.Users;
-using ChangeX.DAL.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace ChangeX.API
@@ -24,8 +22,7 @@ namespace ChangeX.API
             builder.Services.AddScoped<IProjectService, ProjectService>();
 
 
-            builder.Services.AddAutoMapper(configuration =>
-                configuration.CreateMap<User, UserInClientDto>());
+            builder.Services.AddAutoMapper(_ => { }, typeof(Program));
 
             builder.Services.AddCors();
 

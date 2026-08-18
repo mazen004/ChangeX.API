@@ -18,7 +18,6 @@ namespace ChangeX.BLL.Services
             return await _dbContext.Users
                         .AsNoTracking()
                         .Include(u => u.Client)
-                        .OrderByDescending((u => u.ID))
                         //.OrderByDescending((u => u.CreateAt))
                         .ToListAsync();
         }
@@ -29,20 +28,44 @@ namespace ChangeX.BLL.Services
                         .AsNoTracking()
                         .Where(u => u.ClientID == ClientID)
                         .Include(u => u.Client)
-                        .OrderByDescending((u => u.ID))
                         //.OrderByDescending((u => u.CreateAt))
                         .ToListAsync();
+        }
+
+        public async Task<User> GetByID(Guid ID)
+        {
+            var user = await _dbContext.Users
+                        .Where(u => u.ID == ID)
+                        .Include(u => u.Client)
+                        .FirstOrDefaultAsync();
+
+            if (user == null)
+                throw new Exception($"User not found.");
+                
+            return user;
+        }
+
+        public Task<User> GetUserByEmailAndPassword(string Email, string Password)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<User> UpdateUser(User User)
+        {
+            _dbContext.Users.Update(User);
+            await _dbContext.SaveChangesAsync();
+            return User;
         }
 
         public async Task AddUser(User User)
         {
             await _dbContext.Users.AddAsync(User);
-            _dbContext.SaveChanges();
+            await _dbContext.SaveChangesAsync();
         }
 
         public async Task<bool> CouldBeDefault(Guid ClientID)
         {
-            return await _dbContext.Users.AnyAsync(c => c.ID == ClientID && !c.IsPrimaryContact);
+            return await _dbContext.Users.AnyAsync(c => c.ID == ClientID && c.IsPrimaryContact);
         }
 
         public async Task<bool> IsClientVailed(Guid ClientID)

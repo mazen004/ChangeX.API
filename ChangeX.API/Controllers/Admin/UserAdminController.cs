@@ -1,7 +1,7 @@
-using ChangeX.BLL.DTOs.Users;
 using ChangeX.DAL.Entities;
-using Microsoft.AspNetCore.Mvc;
 using ChangeX.BLL.Services;
+using ChangeX.BLL.DTOs.Users;
+using Microsoft.AspNetCore.Mvc;
 using AutoMapper;
 
 namespace ChangeX.API.Controllers.Admin
@@ -27,8 +27,16 @@ namespace ChangeX.API.Controllers.Admin
             return Ok(data);
         }
 
+        [HttpGet("{ID:Guid}")]
+        public async Task<IActionResult> GetUser(Guid ID)
+        {
+            var user = await _userServices.GetByID(ID);
+            var data = _mapper.Map<UserAccountDto>(user);
+            return Ok(data);
+        }
+
         [HttpPost]
-        public async Task<IActionResult> AddUser([FromForm] AddUserDto UserDto)
+        public async Task<IActionResult> AddUser(AddUserDto UserDto)
         {
             try
             {
@@ -51,9 +59,31 @@ namespace ChangeX.API.Controllers.Admin
         }
 
         [HttpPut("{ID:Guid}")]
-        public async Task<IActionResult> UpdateUser(Guid ID)
+        public async Task<IActionResult> UpdateUser(Guid ID, UpdateUserDto UserDto)
         {
-            return Ok();
+            try
+            {
+                var user = await _userServices.GetByID(ID);
+
+                if (user == null)
+                    throw new Exception("User not found.");
+
+                if (!await _userServices.IsClientVailed(UserDto.ClientID))
+                    throw new Exception("InVailed Client ID");
+
+                if (!await _userServices.CouldBeDefault(UserDto.ClientID))
+                    throw new Exception("Only one Default Contact per Client");
+
+                _mapper.Map(UserDto, user);
+
+                await _userServices.UpdateUser(user);
+
+                return Ok(user);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
     }
 }

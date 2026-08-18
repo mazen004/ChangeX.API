@@ -1,18 +1,23 @@
-﻿using ChangeX.BLL.DTOs;
-using ChangeX.DAL.Entities;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using ChangeX.BLL.DTOs;
 
 namespace ChangeX.BLL.Interfaces
 {
     public interface ICRService
     {
-        Task<CR> RequestCRAsync(RequestCRDto dto, Guid clientId);
-        Task<CR> ChangeStatusAsync(Guid crId, string targetStatus, string actorRole);
-        Task<CR> EstimateCRAsync(Guid crId, EstimateCRDto dto);
-        Task<Detail> ClarifyCRAsync(Guid crId, DetailDto dto);
-        Task<Invoice> AcceptEstimateAsync(Guid crId);
-        Task<CR> RejectEstimateAsync(Guid crId);
+        Task<CRWorkflowResponseDto> RequestCRAsync(RequestCRDto dto, Guid clientId);
+        Task<CRWorkflowResponseDto> SubmitAdminFeedbackAsync(
+            Guid crId,
+            AdminFeedbackDto dto);
+        Task<CRWorkflowResponseDto> SubmitClarificationAsync(
+            Guid crId,
+            DetailDto dto);
+        Task<CRWorkflowResponseDto> SubmitEstimateDecisionAsync(
+            Guid crId,
+            EstimateDecisionDto dto);
+        Task<CRWorkflowResponseDto> ChangeStageAsync(Guid crId, ChangeStageDto dto);
+        Task<CRWorkflowResponseDto> SubmitClientApprovalAsync(
+            Guid crId,
+            ClientApprovalDto dto);
+        Task<CRWorkflowResponseDto> GetWorkflowAsync(Guid crId);
     }
 }

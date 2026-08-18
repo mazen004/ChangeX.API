@@ -40,7 +40,11 @@ namespace ChangeX.API.Controllers.Client
         public IActionResult CreateClient(ClientDto clientDto)
         {
             // Logic to create a new client in the database
+<<<<<<< HEAD
+            var client = new  ()
+=======
             var client = new DAL.Entities.Client()
+>>>>>>> 6bd110a6e1f73edd68658a2eb287278cd1bd02ed
             {
                 Name = clientDto.Name,
                 Email = clientDto.Email,
@@ -48,8 +52,10 @@ namespace ChangeX.API.Controllers.Client
                 Address = clientDto.Address,
                 ContactInfo = clientDto.ContactInfo
             };
+
             dbcontext.Clients.Add(client);
             dbcontext.SaveChanges();
+
             return Ok(new { message = "Client created successfully", data = client });
         }
 

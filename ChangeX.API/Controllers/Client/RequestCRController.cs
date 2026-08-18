@@ -20,6 +20,27 @@ namespace ChangeX.API.Controllers.Client
             catch (KeyNotFoundException ex) { return NotFound(new { message = ex.Message }); }
             catch (InvalidOperationException ex) { return BadRequest(new { message = ex.Message }); }
         }
+        [HttpPost("{crId}/accept-estimate")]
+        public async Task<IActionResult> AcceptEstimate(Guid crId)
+        {
+            try
+            {
+                var invoice = await CRService.AcceptEstimateAsync(crId);
+                return Ok(new { message = "Estimate accepted", data = invoice });
+            }
+            catch (Exception ex) { /* handle */ }
+        }
+
+        [HttpPost("{crId}/reject-estimate")]
+        public async Task<IActionResult> RejectEstimate(Guid crId)
+        {
+            try
+            {
+                var cr = await CRService.RejectEstimateAsync(crId);
+                return Ok(new { message = "Estimate rejected", data = cr });
+            }
+            catch (Exception ex) { /* handle */ }
+        }
     }
     }
 

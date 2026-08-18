@@ -1,29 +1,33 @@
-﻿using ChangeX.DAL.Database;
-using ChangeX.BLL.DTOs;
-using Microsoft.AspNetCore.Mvc;
+﻿using ChangeX.BLL.DTOs;
 using ChangeX.BLL.DTOs.Users;
+using ChangeX.BLL.Interfaces;
+using ChangeX.BLL.Services;
+using Microsoft.AspNetCore.Mvc;
 
 namespace ChangeX.API.Controllers.Client
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ProjectClientController : ControllerBase
+    public class ProjectController : ControllerBase
     {
-        private readonly ApplicationContext dbcontext;
+        private readonly IProjectService _projectService;
 
-        public ProjectClientController(ApplicationContext _dbcontext)
+        
+        public ProjectController(IProjectService projectService)
         {
-            this.dbcontext = _dbcontext;
+            _projectService = projectService;
         }
 
         // GET: api/Project
         [HttpGet]
         public IActionResult GetProjects()
         {
+            var projects = _projectService.GetProjectsAsync();
+
             return Ok(new
             {
                 message = "Get all projects",
-                data = dbcontext.Projects.ToList()
+                data = projects
             });
         }
 
@@ -31,7 +35,7 @@ namespace ChangeX.API.Controllers.Client
         [HttpGet("{id}")]
         public IActionResult GetProjectById(Guid id)
         {
-            var project = dbcontext.Projects.Find(id);
+            var project = _projectService.GetProjectByIdAsync(id);
 
             if (project == null)
             {
@@ -52,17 +56,7 @@ namespace ChangeX.API.Controllers.Client
         [HttpPost]
         public IActionResult CreateProject(ProjectDto projectDto)
         {
-            var project = new DAL.Entities.Project()
-            {
-                Name = projectDto.Name,
-                Description = projectDto.Description,
-                Scope = projectDto.Scope,
-                ClientID = projectDto.ClientID,
-                State = projectDto.State
-            };
-
-            dbcontext.Projects.Add(project);
-            dbcontext.SaveChanges();
+            var project = _projectService.CreateProjectAsync(projectDto);
 
             return Ok(new
             {
@@ -75,8 +69,9 @@ namespace ChangeX.API.Controllers.Client
         [HttpPut("{id}")]
         public IActionResult UpdateProject(Guid id, ProjectDto projectDto)
         {
-            var project = dbcontext.Projects.Find(id);
-
+            var project = _projectService.UpdateProjectAsync(id, projectDto);
+           
+           
             if (project == null)
             {
                 return NotFound(new
@@ -84,14 +79,6 @@ namespace ChangeX.API.Controllers.Client
                     message = "Project not found"
                 });
             }
-
-            project.Name = projectDto.Name;
-            project.Description = projectDto.Description;
-            project.Scope = projectDto.Scope;
-            project.ClientID = projectDto.ClientID;
-            project.State = projectDto.State;
-
-            dbcontext.SaveChanges();
 
             return Ok(new
             {
@@ -102,20 +89,18 @@ namespace ChangeX.API.Controllers.Client
 
         // DELETE: api/Project/{id}
         [HttpDelete("{id}")]
-        public IActionResult DeleteProject(Guid id)
+        public async Task<ActionResult> DeleteProject(Guid id)
         {
-            var project = dbcontext.Projects.Find(id);
+            var result = await _projectService.DeleteProjectAsync(id);
 
-            if (project == null)
+
+            if (!result)
             {
                 return NotFound(new
                 {
                     message = "Project not found"
                 });
             }
-
-            dbcontext.Projects.Remove(project);
-            dbcontext.SaveChanges();
 
             return Ok(new
             {

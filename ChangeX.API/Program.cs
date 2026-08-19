@@ -1,6 +1,7 @@
+using ChangeX.BLL.Interfaces;
+using ChangeX.BLL.Profiles;
 using ChangeX.BLL.Services;
 using ChangeX.DAL.Database;
-using ChangeX.BLL.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace ChangeX.API
@@ -21,8 +22,14 @@ namespace ChangeX.API
             //builder.Services.AddScoped<ICRService, CRService>();
             builder.Services.AddScoped<IProjectService, ProjectService>();
 
+            builder.Services.AddScoped<IClientServices, ClientServices>();
 
-            builder.Services.AddAutoMapper(_ => { }, typeof(Program));
+
+
+
+
+
+            builder.Services.AddAutoMapper(cfg => cfg.AddProfile<MappingProfile>());
 
             builder.Services.AddCors();
 
@@ -47,6 +54,12 @@ namespace ChangeX.API
             app.UseAuthorization();
 
             app.MapControllers();
+
+            using (var scope = app.Services.CreateScope())
+            {
+                var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+                await dbContext.Database.MigrateAsync();
+            }
 
             await app.RunAsync();
         }

@@ -1,4 +1,4 @@
-﻿using ChangeX.DAL.Database;
+using ChangeX.DAL.Database;
 using ChangeX.BLL.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using ChangeX.BLL.DTOs;
@@ -58,14 +58,14 @@ namespace ChangeX.API.Controllers.Admin
         public async Task<IActionResult> UpdateClient(Guid id, [FromBody] ClientDto clientDto)
         {
             var client = await clientSercivies.GetByID(id);
-            _mapper.Map(clientDto, client);
-            await clientSercivies.Update(client);
-
             if (client is null)
             {
                 return NotFound(new { message = "Client not found" });
             }
-             
+
+            _mapper.Map(clientDto, client);
+            var updatedClient = await clientSercivies.Update(client);
+
             return Ok(new { message = "Client updated successfully", data = updatedClient });
         }
 

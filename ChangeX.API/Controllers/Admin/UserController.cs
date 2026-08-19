@@ -19,12 +19,15 @@ namespace ChangeX.API.Controllers.Admin
             _userServices = userServices;
         }
 
-        [HttpGet]
+        [HttpGet("GetAllUsers")]
         public async Task<IActionResult> GetAllUsers()
         {
             try
             {
                 var users = await _userServices.GetAll();
+                if (users == null)
+                    return NotFound(new { message = "Users not found." });
+
                 var data = _mapper.Map<IEnumerable<UserAccountDto>>(users);
                 return Ok(data);
             }
@@ -34,11 +37,13 @@ namespace ChangeX.API.Controllers.Admin
             }
         }
 
-        [HttpGet("Client/{ClientID:Guid}")]
+        [HttpGet("GetAllUsersClient/{ClientID:Guid}")]
         public async Task<IActionResult> GetALLUsers(Guid ClientID)
         {
             try
             {
+                if(!await _userServices.IsClientVailed(ClientID))
+                    return NotFound(new { message = "Client Not Found" });
                 var users = await _userServices.GetAll(ClientID);
                 var data = _mapper.Map<IEnumerable<UserAccountDto>>(users);
                 return Ok(data);
@@ -55,6 +60,8 @@ namespace ChangeX.API.Controllers.Admin
             try
             {
                 var user = await _userServices.GetByID(ID);
+                if(user == null)
+                    return NotFound(new { message = "User not found." });
                 var data = _mapper.Map<UserAccountDto>(user);
                 return Ok(data);
             }
@@ -71,6 +78,8 @@ namespace ChangeX.API.Controllers.Admin
             try
             {
                 var user = await _userServices.Login(Email, Password);
+                if (user == null)
+                    return NotFound(new { message = "User Email or Password is incorrect." });
                 var data = _mapper.Map<UserAccountDto>(user);
                 return Ok(data);
             }
@@ -86,10 +95,10 @@ namespace ChangeX.API.Controllers.Admin
             try
             {
                 if (!await _userServices.IsClientVailed(UserDto.ClientID))
-                    throw new Exception("InVailed Client ID");
+                    return NotFound(new { message = "Client Not Found" });
 
                 if (!await _userServices.CouldBeDefault(UserDto.ClientID))
-                    throw new Exception("Only one Default Contact per Client");
+                    return BadRequest(new { message = "Only one Default Contact per Client" });
 
                 var User = _mapper.Map<User>(UserDto);
 
@@ -103,7 +112,7 @@ namespace ChangeX.API.Controllers.Admin
             }
         }
 
-        [HttpPut("{ID:Guid}")]
+        [HttpPut("UpdateUser/{ID:Guid}")]
         public async Task<IActionResult> UpdateUser(Guid ID, UpdateUserDto UserDto)
         {
             try
@@ -111,13 +120,13 @@ namespace ChangeX.API.Controllers.Admin
                 var user = await _userServices.GetByID(ID);
 
                 if (user == null)
-                    throw new Exception("User not found.");
+                    return NotFound(new { message = "User not found." });
 
                 if (!await _userServices.IsClientVailed(UserDto.ClientID))
-                    throw new Exception("InVailed Client ID");
+                    return NotFound(new { message = "Client Not Found" });
 
                 if (!await _userServices.CouldBeDefault(UserDto.ClientID))
-                    throw new Exception("Only one Default Contact per Client");
+                    return BadRequest(new { message = "Only one Default Contact per Client" });
 
                 _mapper.Map(UserDto, user);
 
@@ -131,7 +140,7 @@ namespace ChangeX.API.Controllers.Admin
             }
         }
 
-        [HttpDelete("{ID:Guid}")]
+        [HttpDelete("DeleteUser/{ID:Guid}")]
         public async Task<IActionResult> DeleteUser(Guid ID)
         {
             try
@@ -139,7 +148,7 @@ namespace ChangeX.API.Controllers.Admin
                 var user = await _userServices.GetByID(ID);
 
                 if (user == null)
-                    throw new Exception("User not found.");
+                    return NotFound(new { message = "User not found." });
 
                 await _userServices.DeleteUser(user);
 

@@ -1,4 +1,4 @@
-﻿using ChangeX.DAL.Database;
+using ChangeX.DAL.Database;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -27,7 +27,7 @@ namespace ChangeX.API.Controllers.Admin
                 return NotFound(new { message = "No status found" });
             }
 
-            var availableStatuses = currentStatus.AvailableStatuses
+            var availableStatuses = (currentStatus.AvailableStatusIDs ?? string.Empty)
                 .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
                 .ToList();
 
@@ -53,7 +53,7 @@ namespace ChangeX.API.Controllers.Admin
                 return NotFound(new { message = "CR not found" });
             }
 
-            var availableStatuses = cr.CurrentStatus.AvailableStatuses
+            var availableStatuses = (cr.CurrentStatus?.AvailableStatusIDs ?? string.Empty)
                 .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
                 .ToList();
 

@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ChangeX.DAL.Entities
@@ -10,7 +10,7 @@ namespace ChangeX.DAL.Entities
 
         public string CurrentStatus { get; set; } = string.Empty;
 
-        public Guid AvailableStatusesIDs { get; set; }
+        public string? AvailableStatusIDs { get; set; }
 
         public string AccessedBy { get; set; } = string.Empty;
     }

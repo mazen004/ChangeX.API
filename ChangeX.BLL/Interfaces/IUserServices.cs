@@ -5,7 +5,7 @@ namespace ChangeX.BLL.Services
 {
     public interface IUserServices
     {
-        public Task<IEnumerable<User>> GetAll();
+        public Task<IEnumerable<User>> GetAll(string? search = null);
         public Task<IEnumerable<User>> GetAll(Guid ClientID);
         public Task<User> GetByID(Guid ID);
         public Task<User> Login(string Email, string Password);

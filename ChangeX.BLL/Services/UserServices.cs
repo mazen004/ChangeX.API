@@ -13,13 +13,23 @@ namespace ChangeX.BLL.Services
             _dbContext = dbContext;
         }
 
-        public async Task<IEnumerable<User>> GetAll()
+        public async Task<IEnumerable<User>> GetAll(string? search = null)
         {
-            return await _dbContext.Users
-                        .AsNoTracking()
-                        .Include(u => u.Client)
-                        //.OrderByDescending((u => u.CreateAt))
-                        .ToListAsync();
+            var query = _dbContext.Users
+                .AsNoTracking()
+                .Include(u => u.Client)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                search = search.Trim();
+
+                query = query.Where(u =>
+                    u.Name.Contains(search) ||
+                    u.Email.Contains(search));
+            }
+
+            return await query.ToListAsync();
         }
 
         public async Task<IEnumerable<User>> GetAll(Guid ClientID)
@@ -73,7 +83,7 @@ namespace ChangeX.BLL.Services
 
         public async Task<bool> CouldBeDefault(Guid ClientID)
         {
-            return await _dbContext.Users.AnyAsync(u => u.ClientID == ClientID && !u.IsPrimaryContact);
+            return await _dbContext.Users.AnyAsync(u => u.ClientID == ClientID && u.IsPrimaryContact);
         }
 
         public async Task<bool> IsClientVailed(Guid ClientID)

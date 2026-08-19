@@ -58,12 +58,15 @@ namespace ChangeX.API.Controllers.Admin
         public async Task<IActionResult> UpdateClient(Guid id, [FromBody] ClientDto clientDto)
         {
             var client = await clientSercivies.GetByID(id);
+            _mapper.Map(clientDto, client);
+            await clientSercivies.Update(client);
+
             if (client is null)
             {
                 return NotFound(new { message = "Client not found" });
             }
              
-            return Ok(new { message = "Client updated successfully", data = client });
+            return Ok(new { message = "Client updated successfully", data = updatedClient });
         }
 
         [HttpDelete("{id:guid}")]

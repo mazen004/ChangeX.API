@@ -28,9 +28,11 @@ namespace ChangeX.API
 
 
 
-
-            builder.Services.AddAutoMapper(cfg => cfg.AddProfile<MappingProfile>());
-
+            builder.Services.AddAutoMapper(cfg =>
+            {
+                cfg.AddProfile<MappingProfile>();
+                //cfg.AddProfile<UserProfile>();
+            });
             builder.Services.AddCors();
 
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")

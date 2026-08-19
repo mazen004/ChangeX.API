@@ -20,17 +20,23 @@ namespace ChangeX.API.Controllers.Admin
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAllUsers()
+        public async Task<IActionResult> GetAllUsers(
+     [FromQuery] string? search)
         {
             try
             {
-                var users = await _userServices.GetAll();
+                var users = await _userServices.GetAll(search);
+
                 var data = _mapper.Map<IEnumerable<UserAccountDto>>(users);
+
                 return Ok(data);
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message });
+                return BadRequest(new
+                {
+                    message = ex.Message
+                });
             }
         }
 

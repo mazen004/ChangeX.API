@@ -4,7 +4,7 @@ using ChangeX.BLL.DTOs;
 using Microsoft.EntityFrameworkCore;
 
 
-namespace ChangeX.API.Controllers.Client
+namespace ChangeX.API.Controllers.Admin
 {
     [Route("api/[controller]")]
     [ApiController]

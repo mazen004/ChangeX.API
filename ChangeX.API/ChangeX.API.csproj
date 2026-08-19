@@ -24,4 +24,8 @@
     <ProjectReference Include="..\ChangeX.BLL\ChangeX.BLL.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Controllers\Client\" />
+  </ItemGroup>
+
 </Project>

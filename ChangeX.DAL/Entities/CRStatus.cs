@@ -10,7 +10,7 @@ namespace ChangeX.DAL.Entities
 
         public string CurrentStatus { get; set; } = string.Empty;
 
-        public string AvailableStatuses { get; set; } = string.Empty;
+        public Guid AvailableStatusesIDs { get; set; }
 
         public string AccessedBy { get; set; } = string.Empty;
     }

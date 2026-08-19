@@ -1,8 +1,6 @@
 using ChangeX.BLL.Services;
 using ChangeX.DAL.Database;
 using ChangeX.BLL.Interfaces;
-using ChangeX.BLL.SeedData;
-using ChangeX.BLL.StatusMachine;
 using Microsoft.EntityFrameworkCore;
 
 namespace ChangeX.API
@@ -20,7 +18,7 @@ namespace ChangeX.API
             builder.Services.AddOpenApi();
 
             builder.Services.AddScoped<IUserServices, UserServices>();
-            builder.Services.AddScoped<ICRService, CRService>();
+            //builder.Services.AddScoped<ICRService, CRService>();
             builder.Services.AddScoped<IProjectService, ProjectService>();
 
 
@@ -49,32 +47,6 @@ namespace ChangeX.API
             app.UseAuthorization();
 
             app.MapControllers();
-
-            await using (var scope = app.Services.CreateAsyncScope())
-            {
-                var dbContext = scope.ServiceProvider
-                    .GetRequiredService<ApplicationContext>();
-                var insertedStatuses = await StatusWorkflowSeeder.SeedAsync(dbContext);
-
-                if (insertedStatuses > 0)
-                {
-                    app.Logger.LogInformation(
-                        "Inserted {StatusCount} missing CR workflow statuses",
-                        insertedStatuses);
-                }
-
-                if (app.Environment.IsDevelopment())
-                {
-                    var insertedSampleRecords =
-                        await DevelopmentSampleDataSeeder.SeedAsync(dbContext);
-
-                    app.Logger.LogInformation(
-                        "Development sample data is ready. ClientId: {ClientId}; ProjectId: {ProjectId}; Inserted: {InsertedCount}",
-                        DevelopmentSampleDataSeeder.ClientId,
-                        DevelopmentSampleDataSeeder.ProjectId,
-                        insertedSampleRecords);
-                }
-            }
 
             await app.RunAsync();
         }

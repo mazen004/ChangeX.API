@@ -6,14 +6,14 @@ using AutoMapper;
 
 namespace ChangeX.API.Controllers.Admin
 {
-    [Route("api/admin/[controller]")]
+    [Route("api/[controller]")]
     [ApiController]
-    public class UserAdminController : ControllerBase
+    public class UserController : ControllerBase
     {
         private readonly IMapper _mapper;
         private readonly IUserServices _userServices;
 
-        public UserAdminController(IMapper mapper, IUserServices userServices)
+        public UserController(IMapper mapper, IUserServices userServices)
         {
             _mapper = mapper;
             _userServices = userServices;

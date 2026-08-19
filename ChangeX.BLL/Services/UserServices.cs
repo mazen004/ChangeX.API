@@ -4,18 +4,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ChangeX.BLL.Services
 {
-    public class UserServices : IUserServices
+    public class UserServices(ApplicationContext dbContex) : IUserServices
     {
-        private readonly ApplicationContext _dbContext;
-
-        public UserServices(ApplicationContext dbContext)
-        {
-            _dbContext = dbContext;
-        }
 
         public async Task<IEnumerable<User>> GetAll(string? search = null)
         {
-            var query = _dbContext.Users
+            var query = dbContex.Users
                 .AsNoTracking()
                 .Include(u => u.Client)
                 .AsQueryable();
@@ -26,7 +20,8 @@ namespace ChangeX.BLL.Services
 
                 query = query.Where(u =>
                     u.Name.Contains(search) ||
-                    u.Email.Contains(search));
+                    u.Email.Contains(search))
+                    .Include(u => u.Client);
             }
 
             return await query.ToListAsync();
@@ -34,17 +29,16 @@ namespace ChangeX.BLL.Services
 
         public async Task<IEnumerable<User>> GetAll(Guid ClientID)
         {
-            return await _dbContext.Users
+            return await dbContex.Users
                         .AsNoTracking()
                         .Where(u => u.ClientID == ClientID)
                         .Include(u => u.Client)
-                        //.OrderByDescending((u => u.CreateAt))
                         .ToListAsync();
         }
 
         public async Task<User> GetByID(Guid ID)
         {
-            var user = await _dbContext.Users
+            var user = await dbContex.Users
                         .Where(u => u.ID == ID)
                         .Include(u => u.Client)
                         .FirstOrDefaultAsync();
@@ -57,7 +51,7 @@ namespace ChangeX.BLL.Services
 
         public Task<User> Login(string Email, string Password)
         {
-            var user = _dbContext.Users
+            var user = dbContex.Users
                         // .Where(u => u.Email == Email && u.Password == Password)
                         .Include(u => u.Client)
                         .FirstOrDefault();
@@ -70,31 +64,31 @@ namespace ChangeX.BLL.Services
 
         public async Task<User> UpdateUser(User User)
         {
-            _dbContext.Users.Update(User);
-            await _dbContext.SaveChangesAsync();
+            dbContex.Users.Update(User);
+            await dbContex.SaveChangesAsync();
             return User;
         }
 
         public async Task AddUser(User User)
         {
-            await _dbContext.Users.AddAsync(User);
-            await _dbContext.SaveChangesAsync();
+            await dbContex.Users.AddAsync(User);
+            await dbContex.SaveChangesAsync();
         }
 
         public async Task<bool> CouldBeDefault(Guid ClientID)
         {
-            return await _dbContext.Users.AnyAsync(u => u.ClientID == ClientID && u.IsPrimaryContact);
+            return await dbContex.Users.AnyAsync(u => u.ClientID == ClientID && u.IsPrimaryContact);
         }
 
         public async Task<bool> IsClientVailed(Guid ClientID)
         {
-            return await _dbContext.Clients.AnyAsync(c => c.ID == ClientID);
+            return await dbContex.Clients.AnyAsync(c => c.ID == ClientID);
         }
 
         public async Task DeleteUser(User User)
         {
-            _dbContext.Users.Remove(User);
-            await _dbContext.SaveChangesAsync();
+            dbContex.Users.Remove(User);
+            await dbContex.SaveChangesAsync();
         }
     }
 }

@@ -23,7 +23,7 @@ namespace ChangeX.API
             builder.Services.AddScoped<IProjectService, ProjectService>();
 
             builder.Services.AddScoped<IClientServices, ClientServices>();
-
+            builder.Services.AddScoped<ICRServices, CRService>();
 
 
 

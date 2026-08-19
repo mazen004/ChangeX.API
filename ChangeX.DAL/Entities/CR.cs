@@ -17,10 +17,12 @@ namespace ChangeX.DAL.Entities
         public DateOnly StartDate { get; set; }
         public DateOnly FinishDate { get; set; }
         [ForeignKey(nameof(CurrentStatus))]
-        public Guid CurrentStatusID { get; set; }
+        public Guid CurrentStatusID { get; set;}
+
 
         [ForeignKey(nameof(Project))]
         public Guid ProjectID { get; set; }
         public Project Project { get; set; } = null!;
+        
     }
 }

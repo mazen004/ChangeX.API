@@ -67,7 +67,7 @@ namespace ChangeX.API.Controllers.Admin
         [HttpGet("Login/{Email}/{Password}")]
         public async Task<IActionResult> Login(string Email, string Password)
         {
-            return BadRequest(new { message = "Login is not implemented." });
+            return NotFound(new { message = "Login is not implemented." });
             try
             {
                 var user = await _userServices.Login(Email, Password);

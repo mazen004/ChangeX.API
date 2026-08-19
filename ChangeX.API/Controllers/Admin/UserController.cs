@@ -86,7 +86,7 @@ namespace ChangeX.API.Controllers.Admin
             }
         }
 
-        [HttpPost("AddUser")]
+        [HttpPost]
         public async Task<IActionResult> AddUser(AddUserDto UserDto)
         {
             try

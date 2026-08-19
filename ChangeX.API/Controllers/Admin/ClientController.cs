@@ -1,7 +1,10 @@
 ﻿using ChangeX.DAL.Database;
+using ChangeX.BLL.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using ChangeX.BLL.DTOs;
 using Microsoft.EntityFrameworkCore;
+using AutoMapper;
+using ChangeX.DAL.Entities;
 
 
 namespace ChangeX.API.Controllers.Admin
@@ -10,19 +13,19 @@ namespace ChangeX.API.Controllers.Admin
     [ApiController]
     public class ClientController : ControllerBase
     {
-        private readonly ApplicationContext _dbContext;
+        private readonly IClientServices clientSercivies;
+        private readonly IMapper _mapper;
 
-        public ClientController(ApplicationContext dbContext)
+        public ClientController(IClientServices clientSercivies , IMapper mapper)
         {
-            _dbContext = dbContext;
+            this.clientSercivies = clientSercivies;
+            _mapper = mapper;
         }
 
         [HttpGet]
         public async Task<IActionResult> GetClients()
         {
-            var clients = await _dbContext.Clients
-                .AsNoTracking()
-                .ToListAsync();
+            var clients = await clientSercivies.GetAll();
 
             return Ok(new { message = "Get all clients", data = clients });
         }
@@ -30,9 +33,7 @@ namespace ChangeX.API.Controllers.Admin
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetClientById(Guid id)
         {
-            var client = await _dbContext.Clients
-                .AsNoTracking()
-                .FirstOrDefaultAsync(existingClient => existingClient.ID == id);
+            var client = await clientSercivies.GetByID(id);
 
             if (client is null)
             {
@@ -43,20 +44,10 @@ namespace ChangeX.API.Controllers.Admin
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateClient([FromBody] ClientDto clientDto)
+        public async Task<IActionResult> CreateClient([FromForm] ClientDto clientDto)
         {
-            var client = new DAL.Entities.Client()
-            {
-                ID = Guid.NewGuid(),
-                Name = clientDto.Name,
-                Email = clientDto.Email,
-                Description = clientDto.Description,
-                Address = clientDto.Address,
-                ContactInfo = clientDto.ContactInfo
-            };
-
-            _dbContext.Clients.Add(client);
-            await _dbContext.SaveChangesAsync();
+            var client = _mapper.Map<Client>(clientDto);
+            await clientSercivies.Create(client);
 
             return StatusCode(
                 StatusCodes.Status201Created,
@@ -66,33 +57,25 @@ namespace ChangeX.API.Controllers.Admin
         [HttpPut("{id:guid}")]
         public async Task<IActionResult> UpdateClient(Guid id, [FromBody] ClientDto clientDto)
         {
-            var client = await _dbContext.Clients.FindAsync(id);
+            var client = await clientSercivies.GetByID(id);
             if (client is null)
             {
                 return NotFound(new { message = "Client not found" });
             }
-
-            client.Name = clientDto.Name;
-            client.Email = clientDto.Email;
-            client.Description = clientDto.Description;
-            client.Address = clientDto.Address;
-            client.ContactInfo = clientDto.ContactInfo;
-
-            await _dbContext.SaveChangesAsync();
+             
             return Ok(new { message = "Client updated successfully", data = client });
         }
 
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> DeleteClient(Guid id)
         {
-            var client = await _dbContext.Clients.FindAsync(id);
+            var client = await clientSercivies.GetByID(id);
             if (client is null)
             {
                 return NotFound(new { message = "Client not found" });
             }
 
-            _dbContext.Clients.Remove(client);
-            await _dbContext.SaveChangesAsync();
+            await clientSercivies.Delete(id);
             return Ok(new { message = "Client deleted successfully" });
         }
     }

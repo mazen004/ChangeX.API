@@ -1,6 +1,12 @@
+<<<<<<< HEAD
 ﻿//using ChangeX.DAL.Database;
 //using Microsoft.AspNetCore.Mvc;
 //using Microsoft.EntityFrameworkCore;
+=======
+using ChangeX.DAL.Database;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+>>>>>>> 0179ccc73548077430d1bc7acfd45b3f7302ce2e
 
 //namespace ChangeX.API.Controllers.Admin
 //{
@@ -27,9 +33,15 @@
 //                return NotFound(new { message = "No status found" });
 //            }
 
+<<<<<<< HEAD
 //            var availableStatuses = currentStatus.AvailableStatuses
 //                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
 //                .ToList();
+=======
+            var availableStatuses = (currentStatus.AvailableStatusIDs ?? string.Empty)
+                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .ToList();
+>>>>>>> 0179ccc73548077430d1bc7acfd45b3f7302ce2e
 
 //            return Ok(new
 //            {
@@ -53,9 +65,15 @@
 //                return NotFound(new { message = "CR not found" });
 //            }
 
+<<<<<<< HEAD
 //            var availableStatuses = cr.CurrentStatus.AvailableStatuses
 //                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
 //                .ToList();
+=======
+            var availableStatuses = (cr.CurrentStatus?.AvailableStatusIDs ?? string.Empty)
+                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .ToList();
+>>>>>>> 0179ccc73548077430d1bc7acfd45b3f7302ce2e
 
 //            return Ok(new
 //            {

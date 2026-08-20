@@ -110,7 +110,7 @@ namespace ChangeX.API.Controllers.Admin
             }
         }
 
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         [HttpPost("AddUser")]
         public async Task<IActionResult> AddUser([FromForm] AddUserDto User)
         {

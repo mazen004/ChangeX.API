@@ -1,69 +1,53 @@
-//using ChangeX.DAL.Database;
-//using Microsoft.AspNetCore.Mvc;
-//using Microsoft.EntityFrameworkCore;
+using ChangeX.BLL.Interfaces;
+using Microsoft.AspNetCore.Mvc;
 
-//namespace ChangeX.API.Controllers.Admin
-//{
-//    [Route("api/[controller]")]
-//    [ApiController]
-//    public class StatusController : ControllerBase
-//    {
-//        private readonly ApplicationContext _dbContext;
+namespace ChangeX.API.Controllers.Admin
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class StatusController : ControllerBase
+    {
+        private readonly IStatusService statusService;
 
-//        public StatusController(ApplicationContext dbContext)
-//        {
-//            _dbContext = dbContext;
-//        }
+        public StatusController(IStatusService statusService)
+        {
+            this.statusService = statusService;
+        }
 
-//        [HttpGet("{id:guid}")]
-//        public async Task<IActionResult> GetAvailableStatus(Guid id)
-//        {
-//            var currentStatus = await _dbContext.CRStatues
-//                .AsNoTracking()
-//                .FirstOrDefaultAsync(status => status.ID == id);
+        [HttpGet("cr/{crId:guid}")]
+        public async Task<IActionResult> GetCurrentStatus(Guid crId)
+        {
+            try
+            {
+                var status = await statusService.GetCurrentStatus(crId);
+                return Ok(new
+                {
+                    message = "Status found",
+                    data = status
+                });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+        }
 
-//            if (currentStatus is null)
-//            {
-//                return NotFound(new { message = "No status found" });
-//            }
-
-//            var availableStatuses = (currentStatus.AvailableStatusIDs ?? string.Empty)
-//                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-//                .ToList();
-
-//            return Ok(new
-//            {
-//                id = currentStatus.ID,
-//                currentStatus = currentStatus.CurrentStatus,
-//                availableStatuses,
-//                accessedBy = currentStatus.AccessedBy
-//            });
-//        }
-
-//        [HttpGet("cr/{crId:guid}")]
-//        public async Task<IActionResult> GetAvailableStatusByCR(Guid crId)
-//        {
-//            var cr = await _dbContext.CRs
-//                .AsNoTracking()
-//                .Include(changeRequest => changeRequest.CurrentStatus)
-//                .FirstOrDefaultAsync(changeRequest => changeRequest.ID == crId);
-
-//            if (cr is null)
-//            {
-//                return NotFound(new { message = "CR not found" });
-//            }
-
-//            var availableStatuses = cr.CurrentStatus.AvailableStatus
-//                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-//                .ToList();
-
-//            return Ok(new
-//            {
-//                crId = cr.ID,
-//                currentStatus = cr.CurrentStatus.CurrentStatus,
-//                availableStatuses,
-//                accessedBy = cr.CurrentStatus.AccessedBy
-//            });
-//        }
-//    }
-//}
+        [HttpGet("cr/{crId:guid}/available")]
+        public async Task<IActionResult> GetAvailableStatus(Guid crId)
+        {
+            try
+            {
+                var availableStatuses = await statusService.GetAvailableStatus(crId);
+                return Ok(new
+                {
+                    message = "Available statuses found",
+                    data = availableStatuses
+                });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+        }
+    }
+}

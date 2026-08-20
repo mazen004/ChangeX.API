@@ -44,12 +44,15 @@ namespace ChangeX.API
 
             builder.Services.AddScoped<IClientServices, ClientServices>();
             builder.Services.AddScoped<ICRServices, CRService>();
+            builder.Services.AddScoped<IDetailServices, DetailServices>();
+            builder.Services.AddScoped<IStatusService, StatusService>();
 
             builder.Services.AddAutoMapper(cfg =>
             {
                 cfg.AddProfile<MappingClientProfile>();
                 cfg.AddProfile<MappingUserProfile>();
                 cfg.AddProfile<MappingCRProfile>();
+                cfg.AddProfile<MappingDetailProfile>();
             });
             builder.Services.AddCors();
 
@@ -70,6 +73,8 @@ namespace ChangeX.API
             }
 
             app.UseHttpsRedirection();
+
+            app.UseStaticFiles();
 
             app.UseAuthentication();
             app.UseAuthorization();

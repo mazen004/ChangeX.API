@@ -8,7 +8,7 @@ using System.Text;
 
 namespace ChangeX.BLL.Services
 {
-    public class StatusService
+    public class StatusService : IStatusService
     {
         private readonly ApplicationContext dbcontext;
 
@@ -18,20 +18,34 @@ namespace ChangeX.BLL.Services
         }
 
         
-        public async Task<CRStatus> GetCurrentStatus(Guid ID)
+        public async Task<CRStatus> GetCurrentStatus(Guid CRID)
         {
-            var Status = dbcontext.CRStatues.Where(c => c.ID == ID);
-                
-            if (Status == null)
-                throw new Exception($"Status not found.");
-            return await Status.FirstOrDefaultAsync();
+            var cr = await dbcontext.CRs
+                .AsNoTracking()
+                .Include(cr => cr.CurrentStatus)
+                .FirstOrDefaultAsync(cr => cr.ID == CRID);
+
+            if (cr == null)
+            {
+                throw new KeyNotFoundException("CR not found.");
+            }
+
+            return cr.CurrentStatus;
         }
-        public async Task<List<Guid>> GetAvailableStatus(Guid ID)
+
+        public async Task<List<Guid>> GetAvailableStatus(Guid CRID)
         {
-            var Status = await dbcontext.CRStatues
-               .Where(c => c.ID == ID)
-               .FirstOrDefaultAsync();
-            return Status.AvailableStatusIDs.Split(",").Select(Guid.Parse).ToList();
+            var status = await GetCurrentStatus(CRID);
+
+            if (string.IsNullOrWhiteSpace(status.AvailableStatusIDs))
+            {
+                return [];
+            }
+
+            return status.AvailableStatusIDs
+                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Select(Guid.Parse)
+                .ToList();
         }
         
     }

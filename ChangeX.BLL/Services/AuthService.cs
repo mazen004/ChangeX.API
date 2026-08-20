@@ -16,14 +16,14 @@ namespace ChangeX.BLL.Services
         public async Task<string> Login(User User)
         {
             var user = await dbContex.Users
-                        .Where(u => u.Email == User.Email || u.Name == User.Email)
+                        .Where(u => u.Email == User.Email)
                         .Include(u => u.Client)
                         .FirstOrDefaultAsync();
 
             if (user is null)
-                throw new Exception($"Email or Password is incorrect.");
+                throw new Exception($"Email is incorrect.");
             if(new PasswordHasher<User>().VerifyHashedPassword(user, user.Password, User.Password) == PasswordVerificationResult.Failed)
-                throw new Exception($"Email or Password is incorrect.");
+                throw new Exception($"Password is incorrect.");
 
             return CreateToken(user);
         }

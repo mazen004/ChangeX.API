@@ -7,6 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 //using ChangeX.BLL.Interfaces;
 
 namespace ChangeX.API.Controllers.Admin
@@ -34,6 +35,7 @@ namespace ChangeX.API.Controllers.Admin
             }
         }
 
+        [Authorize]
         [HttpGet("GetAllUsersClient/{ClientID:Guid}")]
         public async Task<IActionResult> GetALLUsers(Guid ClientID)
         {
@@ -74,9 +76,7 @@ namespace ChangeX.API.Controllers.Admin
             //return NotFound(new { message = "Login is not implemented." });
             try
             {
-                var user = await userServices.Login(Email, Password);
-                if (user == null)
-                    return NotFound("User Email or Password is incorrect.");
+                var user = await authService.Login(Email, Password);
                 var data = mapper.Map<UserAccountDto>(user);
                 var token = authService.CreateToken(user);
                 return Ok(new { Token = token });

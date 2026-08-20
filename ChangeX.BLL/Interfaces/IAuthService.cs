@@ -3,10 +3,10 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace ChangeX.BLL.Interfaces
+namespace ChangeX.BLL.Services
 {
     public interface IAuthService
     {
-        public Task<string> Login(User User);
+        public Task<string> Login(string Email, string Password);
     }
 }

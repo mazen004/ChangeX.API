@@ -2,6 +2,7 @@
 using ChangeX.DAL.Database;
 using ChangeX.DAL.Entities;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -12,10 +13,10 @@ namespace ChangeX.BLL.Services
 {
     public sealed class AuthService(ApplicationContext dbContex, IConfiguration configuration) : IAuthService
     {
-        public async Task<string> Login(User User)
+        public async Task<string> Login(string Email, string Password)
         {
             var user = await dbContex.Users
-                        .Where(u => u.Email == User.Email && u.Password == User.Password)
+                        .Where(u => u.Email == Email && u.Password == Password)
                         .Include(u => u.Client)
                         .FirstOrDefaultAsync();
 

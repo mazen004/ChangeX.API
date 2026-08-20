@@ -44,12 +44,14 @@ namespace ChangeX.API
 
             builder.Services.AddScoped<IClientServices, ClientServices>();
             builder.Services.AddScoped<ICRServices, CRService>();
+            builder.Services.AddScoped<IDetailServices, DetailServices>();
 
             builder.Services.AddAutoMapper(cfg =>
             {
                 cfg.AddProfile<MappingClientProfile>();
                 cfg.AddProfile<MappingUserProfile>();
                 cfg.AddProfile<MappingCRProfile>();
+                cfg.AddProfile<MappingDetailProfile>();
             });
             builder.Services.AddCors();
 

@@ -10,7 +10,7 @@ namespace ChangeX.BLL.Services
         public Task<IEnumerable<User>> GetAll(Guid ClientID, Expression<Func<User, bool>>? predicate);
         public Task<User> GetByID(Guid ID);
         public Task AddUser(User User);
-        public Task<bool> CouldBeDefault(Guid ClientID);
+        //public Task<bool> CouldBeDefault(Guid ClientID);
         public Task<bool> IsUserFound(string Email);
         public Task<User> UpdateUser(User User);
         public Task DeleteUser(User User);

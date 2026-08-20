@@ -65,10 +65,10 @@ namespace ChangeX.BLL.Services
             await dbContex.SaveChangesAsync();
         }
 
-        public async Task<bool> CouldBeDefault(Guid ClientID)
-        {
-            return await dbContex.Users.AnyAsync(u => u.ClientID == ClientID && u.IsPrimaryContact);
-        }
+        //public async Task<bool> CouldBeDefault(Guid ClientID)
+        //{
+        //    return await dbContex.Users.AnyAsync(u => u.ClientID == ClientID && u.IsPrimaryContact);
+        //}
 
         public async Task<bool> IsUserFound(string Email)
         {

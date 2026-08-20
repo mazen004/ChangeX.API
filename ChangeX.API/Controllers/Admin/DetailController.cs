@@ -11,6 +11,28 @@ namespace ChangeX.API.Controllers.Admin
     [ApiController]
     public class DetailController : ControllerBase
     {
+        private const long MaxAttachmentSizeInBytes = 10 * 1024 * 1024;
+        private const long MaxUploadRequestSizeInBytes = MaxAttachmentSizeInBytes + (1024 * 1024);
+
+        private static readonly Dictionary<string, HashSet<string>> AllowedAttachmentTypes =
+            new(StringComparer.OrdinalIgnoreCase)
+            {
+                [".pdf"] = new(StringComparer.OrdinalIgnoreCase) { "application/pdf" },
+                [".doc"] = new(StringComparer.OrdinalIgnoreCase) { "application/msword" },
+                [".docx"] = new(StringComparer.OrdinalIgnoreCase)
+                {
+                    "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                },
+                [".xls"] = new(StringComparer.OrdinalIgnoreCase) { "application/vnd.ms-excel" },
+                [".xlsx"] = new(StringComparer.OrdinalIgnoreCase)
+                {
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                },
+                [".jpg"] = new(StringComparer.OrdinalIgnoreCase) { "image/jpeg", "image/pjpeg" },
+                [".jpeg"] = new(StringComparer.OrdinalIgnoreCase) { "image/jpeg", "image/pjpeg" },
+                [".png"] = new(StringComparer.OrdinalIgnoreCase) { "image/png" }
+            };
+
         private readonly IDetailServices detailServices;
         private readonly IMapper mapper;
         private readonly IWebHostEnvironment environment;
@@ -62,11 +84,19 @@ namespace ChangeX.API.Controllers.Admin
 
         [HttpPost]
         [Consumes("multipart/form-data")]
+        [RequestSizeLimit(MaxUploadRequestSizeInBytes)]
+        [RequestFormLimits(MultipartBodyLengthLimit = MaxUploadRequestSizeInBytes)]
         public async Task<IActionResult> CreateDetail([FromForm] DetailDto detailDto)
         {
             if (detailDto.Attachment == null || detailDto.Attachment.Length == 0)
             {
                 return BadRequest(new { message = "Attachment is required." });
+            }
+
+            var attachmentValidationError = ValidateAttachment(detailDto.Attachment);
+            if (attachmentValidationError != null)
+            {
+                return BadRequest(new { message = attachmentValidationError });
             }
 
             var detail = mapper.Map<Detail>(detailDto);
@@ -96,8 +126,19 @@ namespace ChangeX.API.Controllers.Admin
 
         [HttpPut("{id:guid}")]
         [Consumes("multipart/form-data")]
+        [RequestSizeLimit(MaxUploadRequestSizeInBytes)]
+        [RequestFormLimits(MultipartBodyLengthLimit = MaxUploadRequestSizeInBytes)]
         public async Task<IActionResult> UpdateDetail(Guid id, [FromForm] DetailDto detailDto)
         {
+            if (detailDto.Attachment != null && detailDto.Attachment.Length > 0)
+            {
+                var attachmentValidationError = ValidateAttachment(detailDto.Attachment);
+                if (attachmentValidationError != null)
+                {
+                    return BadRequest(new { message = attachmentValidationError });
+                }
+            }
+
             var getResult = await detailServices.GetByID(id);
             if (!getResult.Success)
             {
@@ -165,6 +206,28 @@ namespace ChangeX.API.Controllers.Admin
             DeleteAttachment(getResult.Data!.Attachment);
 
             return Ok(new { message = result.Message });
+        }
+
+        private static string? ValidateAttachment(IFormFile attachment)
+        {
+            if (attachment.Length > MaxAttachmentSizeInBytes)
+            {
+                return "Attachment size must not exceed 10 MB.";
+            }
+
+            var extension = Path.GetExtension(attachment.FileName);
+            if (string.IsNullOrWhiteSpace(extension) ||
+                !AllowedAttachmentTypes.TryGetValue(extension, out var allowedContentTypes))
+            {
+                return "Invalid attachment type. Allowed types: PDF, Word, Excel, JPG, JPEG, and PNG.";
+            }
+
+            if (!allowedContentTypes.Contains(attachment.ContentType))
+            {
+                return "Attachment content type does not match its file extension.";
+            }
+
+            return null;
         }
 
         private async Task<string> SaveAttachment(IFormFile attachment)

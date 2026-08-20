@@ -27,13 +27,24 @@ namespace ChangeX.BLL.Services
             return await query.ToListAsync();
         }
 
-        public async Task<IEnumerable<User>> GetAll(Guid ClientID)
+        public async Task<IEnumerable<User>> GetAll(Guid ClientID, string? search = null)
         {
-            return await dbContex.Users
+            var query = dbContex.Users
                         .AsNoTracking()
                         .Where(u => u.ClientID == ClientID)
-                        .Include(u => u.Client)
-                        .ToListAsync();
+                        .Include(u => u.Client);
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                search = search.Trim();
+
+                query = query.Where(u =>
+                    u.Name.Contains(search) ||
+                    u.Email.Contains(search))
+                    .Include(u => u.Client);
+            }
+
+            return await query.ToListAsync();
         }
 
         public async Task<User> GetByID(Guid ID)
@@ -47,19 +58,6 @@ namespace ChangeX.BLL.Services
                 throw new Exception($"User not found.");
                 
             return user;
-        }
-
-        public Task<User> Login(string Email, string Password)
-        {
-            var user = dbContex.Users
-                        // .Where(u => u.Email == Email && u.Password == Password)
-                        .Include(u => u.Client)
-                        .FirstOrDefault();
-
-            if (user == null)
-                throw new Exception($"User not found.");
-                
-            return Task.FromResult(user);
         }
 
         public async Task<User> UpdateUser(User User)
@@ -80,9 +78,9 @@ namespace ChangeX.BLL.Services
             return await dbContex.Users.AnyAsync(u => u.ClientID == ClientID && u.IsPrimaryContact);
         }
 
-        public async Task<bool> IsClientVailed(Guid ClientID)
+        public async Task<bool> IsUserFound(string Email)
         {
-            return await dbContex.Clients.AnyAsync(c => c.ID == ClientID);
+            return await dbContex.Users.AnyAsync(u => u.Email == Email);
         }
 
         public async Task DeleteUser(User User)

@@ -13,22 +13,24 @@ namespace ChangeX.BLL.Services
 {
     public sealed class AuthService(ApplicationContext dbContex, IConfiguration configuration) : IAuthService
     {
-        public async Task<string> Login(string Email, string Password)
+        public async Task<string> Login(User User)
         {
             var user = await dbContex.Users
-                        .Where(u => u.Email == Email && u.Password == Password)
+                        .Where(u => u.Email == User.Email || u.Name == User.Email)
                         .Include(u => u.Client)
                         .FirstOrDefaultAsync();
 
-            if (user == null)
-                throw new Exception($"User not found.");
+            if (user is null)
+                throw new Exception($"Email or Password is incorrect.");
+            if(new PasswordHasher<User>().VerifyHashedPassword(user, user.Password, User.Password) == PasswordVerificationResult.Failed)
+                throw new Exception($"Email or Password is incorrect.");
 
             return CreateToken(user);
         }
 
         private string CreateToken(User User)
         {
-            var IsAdmin = User.SystemRole == "admin" ? true : false;
+            var IsAdmin = User.Role == "admin" ? true : false;
             var Clamis = new List<Claim>
             {
                 new Claim (ClaimTypes.NameIdentifier, User.ID.ToString()),

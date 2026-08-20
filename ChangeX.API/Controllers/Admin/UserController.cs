@@ -38,11 +38,11 @@ namespace ChangeX.API.Controllers.Admin
 
         [Authorize]
         [HttpGet("GetAllUsersClient/{ClientID:Guid}")]
-        public async Task<IActionResult> GetALLUsers(Guid ClientID)
+        public async Task<IActionResult> GetALLUsers(Guid ClientID, [FromQuery] string? search)
         {
             try
             {
-                var users = await userServices.GetAll(ClientID);
+                var users = await userServices.GetAll(ClientID, search);
                 if (users == null)
                     return NotFound("Users not found.");
                 var data = mapper.Map<IEnumerable<UserAccountDto>>(users);
@@ -72,11 +72,11 @@ namespace ChangeX.API.Controllers.Admin
         }
 
         [HttpGet("Login")]
-        public async Task<IActionResult> Login([FromQuery] string Email,[FromQuery] string Password)
+        public async Task<IActionResult> Login([FromQuery] LoginDto loginDto)
         {
             try
             {
-                var token = await authService.Login(Email, Password);
+                var token = await authService.Login(mapper.Map<User>(loginDto));
                 return Ok(new { Token = token });
             }
             catch (Exception ex)
@@ -86,21 +86,21 @@ namespace ChangeX.API.Controllers.Admin
         }
 
         [HttpPost("AddUser")]
-        public async Task<IActionResult> AddUser([FromForm] AddUserDto UserDto)
+        public async Task<IActionResult> AddUser([FromForm] AddUserDto User)
         {
             try
             {
-                if (!await userServices.IsClientVailed(UserDto.ClientID))
-                    throw new Exception("InVailed Client ID");
+                if (!await userServices.IsUserFound(User.Email))
+                    throw new Exception("User is already registered");
 
-                if (!await userServices.CouldBeDefault(UserDto.ClientID))
+                if (!await userServices.CouldBeDefault(User.ClientID))
                     throw new Exception("Only one Default Contact per Client");
 
-                var User = mapper.Map<User>(UserDto);
+                var user = mapper.Map<User>(User);
 
-                await userServices.AddUser(User);
+                await userServices.AddUser(user);
 
-                return Ok(User);
+                return Ok(user);
             }
             catch (Exception ex)
             {

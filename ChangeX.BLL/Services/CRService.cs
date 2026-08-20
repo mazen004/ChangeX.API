@@ -45,9 +45,16 @@ namespace ChangeX.BLL.Services
 
         public async Task<ServiceResponse<CR>> Create(CR cr)
         {
-           await dbcontext.CRs.AddAsync(cr);
+           var projectExist = await dbcontext.Projects.FindAsync(cr.ProjectID);
+            if (projectExist == null)
+            {
+                return ServiceResponse<CR>.Fail("Project not found", 404);
+            }
+              cr.CurrentStatusID = Guid.Parse("3f2a9e7d-8b41-4c6a-9d2e-1a7f5c8b3e90");
+           
+            await dbcontext.CRs.AddAsync(cr);
            await dbcontext.SaveChangesAsync();
-           return ServiceResponse<CR>.Ok(cr, "CR created successfully");
+           return await GetByID(cr.ID);
         }
 
         public async Task<ServiceResponse<CR>> Update(CR cr)

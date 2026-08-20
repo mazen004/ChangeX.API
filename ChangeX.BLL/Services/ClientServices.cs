@@ -21,13 +21,17 @@ namespace ChangeX.BLL.Services
         public async Task<ServiceResponse<IEnumerable<Client>>> GetAll()
         {
             var clients = await dbcontext.Clients
+                .AsNoTracking()
+                .Include(c => c.DefaultContact)
                 .ToListAsync();
             return ServiceResponse<IEnumerable<Client>>.Ok(clients, "Get all clients");
         }
         public async Task<ServiceResponse<Client>> GetByID(Guid ID)
         {
             var client = await dbcontext.Clients
+                .AsNoTracking()
                 .Where(c => c.ID == ID)
+                .Include(c => c.DefaultContact)
                 .FirstOrDefaultAsync();
             if (client == null)
                 return ServiceResponse<Client>.Fail("Client not found.", 404);

@@ -9,7 +9,7 @@ namespace ChangeX.BLL.Mapping
         public MappingClientProfile()
         {
             CreateMap<ClientDto, Client>().ReverseMap();
-
+            CreateMap<Client, ClientResponseDto>();
         }
     }
 }

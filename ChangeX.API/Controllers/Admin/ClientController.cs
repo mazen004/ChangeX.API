@@ -27,7 +27,8 @@ namespace ChangeX.API.Controllers.Admin
             if (!result.Success)
                 return StatusCode(result.StatusCode, new { message = result.Message });
 
-            return Ok(new { message = result.Message, data = result.Data });
+            var data = _mapper.Map<IEnumerable<ClientResponseDto>>(result.Data);
+            return Ok(new { message = result.Message, data });
         }
 
         [HttpGet("{id:guid}")]
@@ -37,7 +38,8 @@ namespace ChangeX.API.Controllers.Admin
             if (!result.Success)
                 return StatusCode(result.StatusCode, new { message = result.Message });
 
-            return Ok(new { message = result.Message, data = result.Data });
+            var data = _mapper.Map<ClientResponseDto>(result.Data);
+            return Ok(new { message = result.Message, data });
         }
 
         [HttpPost]
@@ -48,9 +50,10 @@ namespace ChangeX.API.Controllers.Admin
             if (!result.Success)
                 return StatusCode(result.StatusCode, new { message = result.Message });
 
+            var data = _mapper.Map<ClientResponseDto>(result.Data);
             return StatusCode(
                 StatusCodes.Status201Created,
-                new { message = result.Message, data = result.Data });
+                new { message = result.Message, data });
         }
 
         [HttpPut("{id:guid}")]
@@ -65,7 +68,8 @@ namespace ChangeX.API.Controllers.Admin
             if (!result.Success)
                 return StatusCode(result.StatusCode, new { message = result.Message });
 
-            return Ok(new { message = result.Message, data = result.Data });
+            var data = _mapper.Map<ClientResponseDto>(result.Data);
+            return Ok(new { message = result.Message, data });
         }
 
         [HttpDelete("{id:guid}")]

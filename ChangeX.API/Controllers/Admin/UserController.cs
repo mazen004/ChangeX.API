@@ -119,8 +119,8 @@ namespace ChangeX.API.Controllers.Admin
                 if (await userServices.IsUserFound(User.Email))
                     throw new Exception("User is already registered");
 
-                if (!await userServices.CouldBeDefault(User.ClientID))
-                    throw new Exception("Only one Default Contact per Client");
+                //if (!await userServices.CouldBeDefault(User.ClientID))
+                //    throw new Exception("Only one Default Contact per Client");
 
                 var user = mapper.Map<User>(User);
 
@@ -148,8 +148,8 @@ namespace ChangeX.API.Controllers.Admin
                 if (!clientResult.Success)
                     return StatusCode(clientResult.StatusCode, new { message = clientResult.Message });
 
-                if (!await userServices.CouldBeDefault(UserDto.ClientID))
-                    throw new Exception("Only one Default Contact per Client");
+                //if (!await userServices.CouldBeDefault(UserDto.ClientID))
+                //    throw new Exception("Only one Default Contact per Client");
 
                 mapper.Map(UserDto, user);
 

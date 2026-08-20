@@ -4,6 +4,7 @@ using ChangeX.DAL.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ChangeX.DAL.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    partial class ApplicationContextModelSnapshot : ModelSnapshot
+    [Migration("20260820095053_UpdateModel")]
+    partial class UpdateModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -225,9 +228,6 @@ namespace ChangeX.DAL.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid?>("DefaultContactID")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
@@ -239,9 +239,12 @@ namespace ChangeX.DAL.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<Guid?>("UserID")
+                        .HasColumnType("uniqueidentifier");
+
                     b.HasKey("ID");
 
-                    b.HasIndex("DefaultContactID");
+                    b.HasIndex("UserID");
 
                     b.ToTable("Clients");
                 });
@@ -386,11 +389,11 @@ namespace ChangeX.DAL.Migrations
 
             modelBuilder.Entity("ChangeX.DAL.Entities.Client", b =>
                 {
-                    b.HasOne("ChangeX.DAL.Entities.User", "DefaultContact")
+                    b.HasOne("ChangeX.DAL.Entities.User", "User")
                         .WithMany()
-                        .HasForeignKey("DefaultContactID");
+                        .HasForeignKey("UserID");
 
-                    b.Navigation("DefaultContact");
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("ChangeX.DAL.Entities.Detail", b =>

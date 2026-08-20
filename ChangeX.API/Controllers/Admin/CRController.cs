@@ -67,7 +67,7 @@ namespace ChangeX.API.Controllers.Admin
 
         // POST: api/CR
         [HttpPost]
-        public async Task<IActionResult> CreateCR([FromBody] CRDto crDto)
+        public async Task<IActionResult> CreateCR([FromBody] CreateCRDto crDto)
         {
             var cr = _mapper.Map<CR>(crDto);
             var result = await _crService.Create(cr);
@@ -82,24 +82,24 @@ namespace ChangeX.API.Controllers.Admin
         }
 
         // PUT: api/CR/{id}
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateCR(Guid id, [FromBody] CRDto crDto)
-        {
-            var getResult = await _crService.GetByID(id);
-            if (!getResult.Success)
-                return StatusCode(getResult.StatusCode, new { message = getResult.Message });
+        //[HttpPut("{id}")]
+        //public async Task<IActionResult> UpdateCR(Guid id, [FromBody] CreateCRDto crDto)
+        //{
+        //    var getResult = await _crService.GetByID(id);
+        //    if (!getResult.Success)
+        //        return StatusCode(getResult.StatusCode, new { message = getResult.Message });
 
-            _mapper.Map(crDto, getResult.Data);
-            var result = await _crService.Update(getResult.Data!);
-            if (!result.Success)
-                return StatusCode(result.StatusCode, new { message = result.Message });
+        //    _mapper.Map(crDto, getResult.Data);
+        //    var result = await _crService.Update(getResult.Data!);
+        //    if (!result.Success)
+        //        return StatusCode(result.StatusCode, new { message = result.Message });
 
-            return Ok(new
-            {
-                message = result.Message,
-                data = result.Data
-            });
-        }
+        //    return Ok(new
+        //    {
+        //        message = result.Message,
+        //        data = result.Data
+        //    });
+        //}
 
         // DELETE: api/CR/{id}
         [HttpDelete("{id}")]
@@ -116,7 +116,7 @@ namespace ChangeX.API.Controllers.Admin
         }
 
         [HttpPut("change_status/{id}")]
-        public async Task<IActionResult> ChangeStatus([FromBody] Guid id, Guid CRID)
+        public async Task<IActionResult> ChangeStatus(Guid id, Guid CRID)
         {
             var crResult = await _crService.GetByID(CRID);
             if (!crResult.Success)

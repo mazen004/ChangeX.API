@@ -1,6 +1,6 @@
 namespace ChangeX.BLL.DTOs
 {
-    public class CRDto
+    public class CreateCRDto
     {
         public string Name { get; set; } = string.Empty;
         public string Priority { get; set; } = string.Empty;
@@ -10,7 +10,6 @@ namespace ChangeX.BLL.DTOs
         public decimal ManHourRate { get; set; }
         public DateOnly StartDate { get; set; }
         public DateOnly FinishDate { get; set; }
-        public Guid CurrentStatusID { get; set; }
         public Guid ProjectID { get; set; }
     }
 }

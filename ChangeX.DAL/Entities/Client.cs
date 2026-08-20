@@ -12,8 +12,8 @@ namespace ChangeX.DAL.Entities
         public string? Address { get; set; }
         public string ContactInfo { get; set; }
 
-        [ForeignKey(nameof(User))]
-        public Guid? UserID { get; set; }
-        public User User { get; set; }
+        public Guid? DefaultContactID { get; set; }
+        [ForeignKey(nameof(DefaultContactID))]
+        public User DefaultContact { get; set; }
     }
 }

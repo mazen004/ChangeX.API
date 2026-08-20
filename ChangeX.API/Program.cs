@@ -48,7 +48,6 @@ namespace ChangeX.API
             builder.Services.AddScoped<IDetailServices, DetailServices>();
             builder.Services.AddScoped<IStatusService, StatusService>();
 
-            // Program.cs setup
             builder.Services.AddSwaggerGen(options =>
             {
                 options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
@@ -61,7 +60,6 @@ namespace ChangeX.API
                     Description = "Enter your JWT token"
                 });
 
-                // NEW API for Swashbuckle 10 / OpenAPI.NET 2.x
                 options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
                 {
                     [new OpenApiSecuritySchemeReference("Bearer", document)] = []
@@ -89,9 +87,9 @@ namespace ChangeX.API
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
-                app.MapOpenApi();
+                app.UseSwagger();
                 app.UseSwaggerUI(options =>
-               options.SwaggerEndpoint("/openapi/v1.json", "ChangeX"));
+                    options.SwaggerEndpoint("/swagger/v1/swagger.json", "ChangeX"));
             }
 
             app.UseHttpsRedirection();

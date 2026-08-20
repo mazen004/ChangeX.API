@@ -1,5 +1,6 @@
 using ChangeX.DAL.Database;
 using ChangeX.DAL.Entities;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
@@ -59,6 +60,7 @@ namespace ChangeX.BLL.Services
 
         public async Task AddUser(User User)
         {
+            User.Password = new PasswordHasher<User>().HashPassword(User, User.Password);
             await dbContex.Users.AddAsync(User);
             await dbContex.SaveChangesAsync();
         }

@@ -18,7 +18,7 @@ namespace ChangeX.API.Controllers.Admin
     [ApiController]
     public class UserController(IMapper mapper, IUserServices userServices, IAuthService authService, IClientServices clientServices) : ControllerBase
     {
-        [Authorize]
+        [Authorize(Roles ="Admin")]
         [HttpGet("GetAllUsers")]
         public async Task<IActionResult> GetAllUsers([FromQuery] string? query, bool? systemRole)
         {
@@ -51,10 +51,12 @@ namespace ChangeX.API.Controllers.Admin
 
         [Authorize]
         [HttpGet("GetAllUsersClient/{ClientID:Guid}")]
-        public async Task<IActionResult> GetALLUsers(Guid ClientID, [FromQuery] string? query)
+        public async Task<IActionResult> GetAllUsers(Guid ClientID, [FromQuery] string? query)
         {
             try
             {
+                await clientServices.GetByID(ClientID);
+
                 Expression<Func<User, bool>>? predicate = null;
 
                 if (!string.IsNullOrWhiteSpace(query))
@@ -106,13 +108,13 @@ namespace ChangeX.API.Controllers.Admin
             }
         }
 
-        [Authorize(Roles = "true")]
+        [Authorize(Roles = "Admin")]
         [HttpPost("AddUser")]
         public async Task<IActionResult> AddUser([FromForm] AddUserDto User)
         {
             try
             {
-                if (!await userServices.IsUserFound(User.Email))
+                if (await userServices.IsUserFound(User.Email))
                     throw new Exception("User is already registered");
 
                 if (!await userServices.CouldBeDefault(User.ClientID))
@@ -140,8 +142,7 @@ namespace ChangeX.API.Controllers.Admin
                 if (user == null)
                     return NotFound("User not found.");
 
-                if (!await userServices.IsClientVailed(UserDto.ClientID))
-                    throw new Exception("InVailed Client ID");
+                await clientServices.GetByID(UserDto.ClientID);
 
                 if (!await userServices.CouldBeDefault(UserDto.ClientID))
                     throw new Exception("Only one Default Contact per Client");

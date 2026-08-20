@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace ChangeX.BLL.Services
+namespace ChangeX.BLL.Interfaces
 {
     public interface IAuthService
     {

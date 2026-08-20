@@ -1,15 +1,10 @@
 using AutoMapper;
 using ChangeX.BLL.DTOs.Users;
 using ChangeX.BLL.Interfaces;
-using ChangeX.BLL.Services;
 using ChangeX.DAL.Entities;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
 using System.Linq.Expressions;
-using System.Security.Claims;
 //using ChangeX.BLL.Interfaces;
 
 namespace ChangeX.API.Controllers.Admin
@@ -69,7 +64,8 @@ namespace ChangeX.API.Controllers.Admin
                 var users = await userServices.GetAll(ClientID, predicate);
                 if (users == null)
                     return NotFound("Users not found.");
-                var data = mapper.Map<IEnumerable<UserAccountDto>>(users);
+                var data = mapper.Map<IEnumerable<UserInClientDto>>(users);
+                //data.SystemRole = users.SystemRole ? "Admin" : "False";
                 return Ok(data);
             }
             catch (Exception ex)
@@ -110,7 +106,7 @@ namespace ChangeX.API.Controllers.Admin
             }
         }
 
-        //[Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         [HttpPost("AddUser")]
         public async Task<IActionResult> AddUser([FromForm] AddUserDto User)
         {
@@ -118,9 +114,6 @@ namespace ChangeX.API.Controllers.Admin
             {
                 if (await userServices.IsUserFound(User.Email))
                     throw new Exception("User is already registered");
-
-                //if (!await userServices.CouldBeDefault(User.ClientID))
-                //    throw new Exception("Only one Default Contact per Client");
 
                 var user = mapper.Map<User>(User);
 
@@ -147,9 +140,6 @@ namespace ChangeX.API.Controllers.Admin
                 var clientResult = await clientServices.GetByID(UserDto.ClientID);
                 if (!clientResult.Success)
                     return StatusCode(clientResult.StatusCode, new { message = clientResult.Message });
-
-                //if (!await userServices.CouldBeDefault(UserDto.ClientID))
-                //    throw new Exception("Only one Default Contact per Client");
 
                 mapper.Map(UserDto, user);
 

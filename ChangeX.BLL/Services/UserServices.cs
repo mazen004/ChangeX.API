@@ -1,5 +1,6 @@
 using ChangeX.DAL.Database;
 using ChangeX.DAL.Entities;
+using ChangeX.BLL.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
@@ -47,6 +48,7 @@ namespace ChangeX.BLL.Services
                         .Where(u => u.ID == ID)
                         .Include(u => u.Client)
                         .FirstOrDefaultAsync();
+
                 
             return user;
         }
@@ -64,11 +66,6 @@ namespace ChangeX.BLL.Services
             await dbContex.Users.AddAsync(User);
             await dbContex.SaveChangesAsync();
         }
-
-        //public async Task<bool> CouldBeDefault(Guid ClientID)
-        //{
-        //    return await dbContex.Users.AnyAsync(u => u.ClientID == ClientID && u.IsPrimaryContact);
-        //}
 
         public async Task<bool> IsUserFound(string Email)
         {

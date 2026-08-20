@@ -1,8 +1,7 @@
 using ChangeX.DAL.Entities;
-using Microsoft.Identity.Client;
 using System.Linq.Expressions;
 
-namespace ChangeX.BLL.Services
+namespace ChangeX.BLL.Interfaces
 {
     public interface IUserServices
     {

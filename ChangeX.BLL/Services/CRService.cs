@@ -1,3 +1,4 @@
+
 using ChangeX.BLL.Interfaces;
 using ChangeX.DAL.Database;
 using ChangeX.DAL.Entities;
@@ -76,6 +77,38 @@ namespace ChangeX.BLL.Services
             }
             dbcontext.Remove(cr);
             await dbcontext.SaveChangesAsync();
+        }
+
+        public async Task<CR> ChangeStatus( Guid TargetStatusID,CR currentCR)
+        {
+            //var currentStatus = await dbcontext.CRStatues
+            //   .Where(c => c.ID == CurrentStatusID)
+            //   .FirstOrDefaultAsync();
+            var currentStatus = currentCR.CurrentStatus;
+
+            var availableStatus = currentStatus.AvailableStatusIDs.Split(",").Select(Guid.Parse).ToList();
+
+            if ( availableStatus==null) {
+                throw new Exception($"Status not found.");
+            }
+            if ( currentCR==null) {
+                throw new Exception($"CR not found.");
+            }
+
+            foreach (var status in availableStatus)
+            {
+                if (status == TargetStatusID)
+                {
+                 currentCR.CurrentStatusID=TargetStatusID;
+                   
+                }
+            }
+            if(currentCR.CurrentStatusID != TargetStatusID)
+            {
+                throw new Exception("Target status not accessible");
+            }
+            return currentCR;
+
         }
     }
 }

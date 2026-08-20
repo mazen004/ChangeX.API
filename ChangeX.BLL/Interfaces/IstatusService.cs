@@ -5,10 +5,10 @@ using System.Text;
 
 namespace ChangeX.BLL.Interfaces
 {
-    internal interface IstatusService
+    public interface IStatusService
     {
-        Task<CRStatus> GetCurrentStatus(Guid ID);
-        Task<List<Guid>> GetAvailableStatus(Guid ID);
+        Task<CRStatus> GetCurrentStatus(Guid CRID);
+        Task<List<Guid>> GetAvailableStatus(Guid CRID);
      
     }
 }

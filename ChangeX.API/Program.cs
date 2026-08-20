@@ -45,6 +45,7 @@ namespace ChangeX.API
             builder.Services.AddScoped<IClientServices, ClientServices>();
             builder.Services.AddScoped<ICRServices, CRService>();
             builder.Services.AddScoped<IDetailServices, DetailServices>();
+            builder.Services.AddScoped<IStatusService, StatusService>();
 
             builder.Services.AddAutoMapper(cfg =>
             {

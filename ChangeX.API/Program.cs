@@ -2,7 +2,10 @@ using ChangeX.BLL.Interfaces;
 using ChangeX.BLL.Mapping;
 using ChangeX.BLL.Services;
 using ChangeX.DAL.Database;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace ChangeX.API
 {
@@ -17,15 +20,30 @@ namespace ChangeX.API
             builder.Services.AddControllers();
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             builder.Services.AddOpenApi();
+            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
+                {
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidIssuer = builder.Configuration["AppSettings:Issuer"],
+                        ValidateAudience = true,
+                        ValidAudience = builder.Configuration["AppSettings:Audience"],
+                        ValidateLifetime = true,
+                        IssuerSigningKey = new SymmetricSecurityKey(
+                            Encoding.UTF8.GetBytes(builder.Configuration["AppSettings:Token"]!)),
+                        ValidateIssuerSigningKey = true
+                    };
+
+                });
 
             builder.Services.AddScoped<IUserServices, UserServices>();
+            builder.Services.AddScoped<IAuthService, AuthService>();
+
             builder.Services.AddScoped<IProjectService, ProjectService>();
 
             builder.Services.AddScoped<IClientServices, ClientServices>();
             builder.Services.AddScoped<ICRServices, CRService>();
-
-
-
 
             builder.Services.AddAutoMapper(cfg =>
             {
@@ -53,6 +71,7 @@ namespace ChangeX.API
 
             app.UseHttpsRedirection();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.MapControllers();

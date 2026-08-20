@@ -1,39 +1,44 @@
-using ChangeX.DAL.Entities;
 using ChangeX.DAL.Database;
+using ChangeX.DAL.Entities;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace ChangeX.BLL.Services
 {
     public class UserServices(ApplicationContext dbContex) : IUserServices
     {
 
-        public async Task<IEnumerable<User>> GetAll(string? search = null)
+        public async Task<IEnumerable<User>> GetAll(Expression<Func<User, bool>>? predicate)
         {
             var query = dbContex.Users
                 .AsNoTracking()
                 .Include(u => u.Client)
                 .AsQueryable();
 
-            if (!string.IsNullOrWhiteSpace(search))
+            if (predicate != null)
             {
-                search = search.Trim();
-
-                query = query.Where(u =>
-                    u.Name.Contains(search) ||
-                    u.Email.Contains(search))
-                    .Include(u => u.Client);
+                query = query.Where(predicate);
             }
 
             return await query.ToListAsync();
         }
 
-        public async Task<IEnumerable<User>> GetAll(Guid ClientID)
+        public async Task<IEnumerable<User>> GetAll(Guid ClientID, Expression<Func<User, bool>>? predicate)
         {
-            return await dbContex.Users
+            var query = dbContex.Users
                         .AsNoTracking()
                         .Where(u => u.ClientID == ClientID)
-                        .Include(u => u.Client)
-                        .ToListAsync();
+                        .Include(u => u.Client);
+
+            if (predicate != null)
+            {
+
+                query = query.Where(predicate)
+                    .Include(u => u.Client);
+            }
+
+            return await query.ToListAsync();
         }
 
         public async Task<User> GetByID(Guid ID)
@@ -42,24 +47,8 @@ namespace ChangeX.BLL.Services
                         .Where(u => u.ID == ID)
                         .Include(u => u.Client)
                         .FirstOrDefaultAsync();
-
-            if (user == null)
-                throw new Exception($"User not found.");
                 
             return user;
-        }
-
-        public Task<User> Login(string Email, string Password)
-        {
-            var user = dbContex.Users
-                        // .Where(u => u.Email == Email && u.Password == Password)
-                        .Include(u => u.Client)
-                        .FirstOrDefault();
-
-            if (user == null)
-                throw new Exception($"User not found.");
-                
-            return Task.FromResult(user);
         }
 
         public async Task<User> UpdateUser(User User)
@@ -71,6 +60,7 @@ namespace ChangeX.BLL.Services
 
         public async Task AddUser(User User)
         {
+            User.Password = new PasswordHasher<User>().HashPassword(User, User.Password);
             await dbContex.Users.AddAsync(User);
             await dbContex.SaveChangesAsync();
         }
@@ -80,9 +70,9 @@ namespace ChangeX.BLL.Services
             return await dbContex.Users.AnyAsync(u => u.ClientID == ClientID && u.IsPrimaryContact);
         }
 
-        public async Task<bool> IsClientVailed(Guid ClientID)
+        public async Task<bool> IsUserFound(string Email)
         {
-            return await dbContex.Clients.AnyAsync(c => c.ID == ClientID);
+            return await dbContex.Users.AnyAsync(u => u.Email == Email);
         }
 
         public async Task DeleteUser(User User)

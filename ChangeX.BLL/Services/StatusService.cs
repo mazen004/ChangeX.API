@@ -20,23 +20,19 @@ namespace ChangeX.BLL.Services
         
         public async Task<CRStatus> GetCurrentStatus(Guid ID)
         {
-            var Status = await dbcontext.CRStatues
-                .Where(c => c.ID == ID)
-                .FirstOrDefaultAsync();
+            var Status = dbcontext.CRStatues.Where(c => c.ID == ID);
+                
             if (Status == null)
                 throw new Exception($"Status not found.");
-            return Status;
+            return await Status.FirstOrDefaultAsync();
         }
-        public async Task<string[]> GetAvailableStatus(Guid ID)
+        public async Task<List<Guid>> GetAvailableStatus(Guid ID)
         {
             var Status = await dbcontext.CRStatues
                .Where(c => c.ID == ID)
                .FirstOrDefaultAsync();
-            return Status.AvailableStatusIDs.Split(",");
+            return Status.AvailableStatusIDs.Split(",").Select(Guid.Parse).ToList();
         }
-        //public async Task<CRStatus> ChangeStatus(CRStatus status)
-        //{
-
-        //}
+        
     }
 }

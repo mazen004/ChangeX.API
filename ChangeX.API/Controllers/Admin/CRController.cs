@@ -3,6 +3,7 @@ using ChangeX.BLL.DTOs;
 using ChangeX.BLL.Interfaces;
 using ChangeX.DAL.Entities;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
 namespace ChangeX.API.Controllers.Admin
@@ -115,8 +116,22 @@ namespace ChangeX.API.Controllers.Admin
                 message = "CR deleted successfully"
             });
         }
+        [HttpPut("change_status/{id}")]
         
-        
+        public async Task<IActionResult> ChangeStatus([FromBody] Guid id, Guid CRID)
+        {
+
+            var cr = await _crService.GetByID(CRID);
+
+            var updatedCR = await _crService.ChangeStatus(id,cr);
+
+
+            return Ok(new
+            {
+                message = "CR status changed successfully",
+                data= updatedCR
+            });
+        }
     }
 }
 

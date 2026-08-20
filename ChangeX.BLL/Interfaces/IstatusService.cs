@@ -8,7 +8,7 @@ namespace ChangeX.BLL.Interfaces
     internal interface IstatusService
     {
         Task<CRStatus> GetCurrentStatus(Guid ID);
-        Task<CRStatus> GetAvailableStatus(Guid ID);
-        Task<CRStatus> ChangeStatus(CRStatus status);
+        Task<List<Guid>> GetAvailableStatus(Guid ID);
+     
     }
 }

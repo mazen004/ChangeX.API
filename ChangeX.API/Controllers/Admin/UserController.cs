@@ -1,27 +1,42 @@
-using ChangeX.DAL.Entities;
-using ChangeX.BLL.Services;
+using AutoMapper;
 using ChangeX.BLL.DTOs.Users;
-using Microsoft.AspNetCore.Mvc;
+using ChangeX.BLL.Interfaces;
+using ChangeX.BLL.Services;
+using ChangeX.DAL.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq.Expressions;
 using System.Security.Claims;
-using AutoMapper;
 //using ChangeX.BLL.Interfaces;
 
 namespace ChangeX.API.Controllers.Admin
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class UserController(IMapper mapper, IUserServices userServices, IAuthService authService) : ControllerBase
+    public class UserController(IMapper mapper, IUserServices userServices, IAuthService authService, IClientServices clientServices) : ControllerBase
     {
-
+        [Authorize(Roles ="Admin")]
         [HttpGet("GetAllUsers")]
-        public async Task<IActionResult> GetAllUsers([FromQuery] string? search)
+        public async Task<IActionResult> GetAllUsers([FromQuery] string? query, bool? systemRole)
         {
             try
             {
-                var users = await userServices.GetAll(search);
+                Expression<Func<User, bool>>? predicate = null;
+
+                if (!string.IsNullOrWhiteSpace(query) || systemRole.HasValue)
+                {
+                    if (!string.IsNullOrWhiteSpace(query))
+                    {
+                        query = query.Trim();
+                    }
+                    predicate = u => (query != null && (u.Name.Contains(query) || u.Email.Contains(query))
+                                      && (systemRole.HasValue && u.SystemRole == systemRole.Value));
+                }
+
+                var users = await userServices.GetAll(predicate);
                 if (users == null)
                     return NotFound("Users not found.");
                 var data = mapper.Map<IEnumerable<UserAccountDto>>(users);
@@ -34,12 +49,22 @@ namespace ChangeX.API.Controllers.Admin
             }
         }
 
+        [Authorize]
         [HttpGet("GetAllUsersClient/{ClientID:Guid}")]
-        public async Task<IActionResult> GetALLUsers(Guid ClientID)
+        public async Task<IActionResult> GetAllUsers(Guid ClientID, [FromQuery] string? query)
         {
             try
             {
-                var users = await userServices.GetAll(ClientID);
+                await clientServices.GetByID(ClientID);
+
+                Expression<Func<User, bool>>? predicate = null;
+
+                if (!string.IsNullOrWhiteSpace(query))
+                {
+                    query = query.Trim();
+                    predicate = u => query != null && (u.Name.Contains(query) || u.Email.Contains(query));
+                }
+                var users = await userServices.GetAll(ClientID, predicate);
                 if (users == null)
                     return NotFound("Users not found.");
                 var data = mapper.Map<IEnumerable<UserAccountDto>>(users);
@@ -51,6 +76,7 @@ namespace ChangeX.API.Controllers.Admin
             }
         }
 
+        [Authorize]
         [HttpGet("GetUser/{ID:Guid}")]
         public async Task<IActionResult> GetUser(Guid ID)
         {
@@ -69,16 +95,11 @@ namespace ChangeX.API.Controllers.Admin
         }
 
         [HttpGet("Login")]
-        public async Task<IActionResult> Login([FromQuery] string Email,[FromQuery] string Password)
+        public async Task<IActionResult> Login([FromQuery] LoginDto loginDto)
         {
-            //return NotFound(new { message = "Login is not implemented." });
             try
             {
-                var user = await userServices.Login(Email, Password);
-                if (user == null)
-                    return NotFound("User Email or Password is incorrect.");
-                var data = mapper.Map<UserAccountDto>(user);
-                var token = authService.CreateToken(user);
+                var token = await authService.Login(mapper.Map<User>(loginDto));
                 return Ok(new { Token = token });
             }
             catch (Exception ex)
@@ -87,22 +108,23 @@ namespace ChangeX.API.Controllers.Admin
             }
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPost("AddUser")]
-        public async Task<IActionResult> AddUser([FromForm] AddUserDto UserDto)
+        public async Task<IActionResult> AddUser([FromForm] AddUserDto User)
         {
             try
             {
-                if (!await userServices.IsClientVailed(UserDto.ClientID))
-                    throw new Exception("InVailed Client ID");
+                if (await userServices.IsUserFound(User.Email))
+                    throw new Exception("User is already registered");
 
-                if (!await userServices.CouldBeDefault(UserDto.ClientID))
+                if (!await userServices.CouldBeDefault(User.ClientID))
                     throw new Exception("Only one Default Contact per Client");
 
-                var User = mapper.Map<User>(UserDto);
+                var user = mapper.Map<User>(User);
 
-                await userServices.AddUser(User);
+                await userServices.AddUser(user);
 
-                return Ok(User);
+                return Ok(user);
             }
             catch (Exception ex)
             {
@@ -120,8 +142,7 @@ namespace ChangeX.API.Controllers.Admin
                 if (user == null)
                     return NotFound("User not found.");
 
-                if (!await userServices.IsClientVailed(UserDto.ClientID))
-                    throw new Exception("InVailed Client ID");
+                await clientServices.GetByID(UserDto.ClientID);
 
                 if (!await userServices.CouldBeDefault(UserDto.ClientID))
                     throw new Exception("Only one Default Contact per Client");

@@ -1,5 +1,5 @@
 using ChangeX.BLL.Interfaces;
-using ChangeX.BLL.Profiles;
+using ChangeX.BLL.Mapping;
 using ChangeX.BLL.Services;
 using ChangeX.DAL.Database;
 using Microsoft.EntityFrameworkCore;
@@ -30,7 +30,7 @@ namespace ChangeX.API
 
             builder.Services.AddAutoMapper(cfg =>
             {
-                cfg.AddProfile<MappingProfile>();
+                cfg.AddProfile<MappingClientProfile>();
                 //cfg.AddProfile<UserProfile>();
             });
             builder.Services.AddCors();
@@ -60,7 +60,6 @@ namespace ChangeX.API
             using (var scope = app.Services.CreateScope())
             {
                 var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
-                await dbContext.Database.MigrateAsync();
             }
 
             await app.RunAsync();

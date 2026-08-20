@@ -2,6 +2,7 @@
 using ChangeX.DAL.Database;
 using ChangeX.DAL.Entities;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -15,25 +16,27 @@ namespace ChangeX.BLL.Services
         public async Task<string> Login(User User)
         {
             var user = await dbContex.Users
-                        .Where(u => u.Email == User.Email && u.Password == User.Password)
+                        .Where(u => u.Email == User.Email || u.Name == User.Email)
                         .Include(u => u.Client)
                         .FirstOrDefaultAsync();
 
-            if (user == null)
-                throw new Exception($"User not found.");
+            if (user is null)
+                throw new Exception($"Email or Password is incorrect.");
+            if(new PasswordHasher<User>().VerifyHashedPassword(user, user.Password, User.Password) == PasswordVerificationResult.Failed)
+                throw new Exception($"Email or Password is incorrect.");
 
             return CreateToken(user);
         }
 
         private string CreateToken(User User)
         {
-            var IsAdmin = User.SystemRole == "admin" ? true : false;
+            var IAdmin = User.SystemRole ? "Admin" : "User";
             var Clamis = new List<Claim>
             {
                 new Claim (ClaimTypes.NameIdentifier, User.ID.ToString()),
                 new Claim (ClaimTypes.Name, User.Name),
                 new Claim (ClaimTypes.Email, User.Email),
-                new Claim (ClaimTypes.Role, IsAdmin.ToString()),
+                new Claim (ClaimTypes.Role, IAdmin),
             };
 
             var Key = new SymmetricSecurityKey(

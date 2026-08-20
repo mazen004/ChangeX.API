@@ -30,13 +30,12 @@ namespace ChangeX.BLL.Services
 
         private string CreateToken(User User)
         {
-            var IsAdmin = User.Role == "admin" ? true : false;
             var Clamis = new List<Claim>
             {
                 new Claim (ClaimTypes.NameIdentifier, User.ID.ToString()),
                 new Claim (ClaimTypes.Name, User.Name),
                 new Claim (ClaimTypes.Email, User.Email),
-                new Claim (ClaimTypes.Role, IsAdmin.ToString()),
+                new Claim (ClaimTypes.Role, User.SystemRole.ToString()),
             };
 
             var Key = new SymmetricSecurityKey(

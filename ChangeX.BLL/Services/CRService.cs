@@ -1,4 +1,5 @@
 
+using ChangeX.BLL.DTOs;
 using ChangeX.BLL.Interfaces;
 using ChangeX.DAL.Database;
 using ChangeX.DAL.Entities;
@@ -16,7 +17,7 @@ namespace ChangeX.BLL.Services
             this.dbcontext = dbcontext;
         }
 
-        public async Task<IEnumerable<CR>> GetAll(Expression<Func<CR, bool>>? predicate)
+        public async Task<ServiceResponse<IEnumerable<CR>>> GetAll(Expression<Func<CR, bool>>? predicate)
         {
             IQueryable<CR> query = dbcontext.CRs
                 .AsNoTracking()
@@ -26,31 +27,35 @@ namespace ChangeX.BLL.Services
             {
                 query = query.Where(predicate);
             }
-            return await query.ToListAsync();
+            var result = await query.ToListAsync();
+            return ServiceResponse<IEnumerable<CR>>.Ok(result, "Get all CRs");
         }
 
-        public async Task<CR?> GetByID(Guid ID)
+        public async Task<ServiceResponse<CR>> GetByID(Guid ID)
         {
-            return await dbcontext.CRs
+            var cr = await dbcontext.CRs
                 .AsNoTracking()
                 .Include(c => c.CurrentStatus)
                 .Include(c => c.Project)
                 .FirstOrDefaultAsync(c => c.ID == ID);
+            if (cr == null)
+                return ServiceResponse<CR>.Fail("CR not found.", 404);
+            return ServiceResponse<CR>.Ok(cr, "CR found");
         }
 
-        public async Task<CR> Create(CR cr)
+        public async Task<ServiceResponse<CR>> Create(CR cr)
         {
            await dbcontext.CRs.AddAsync(cr);
            await dbcontext.SaveChangesAsync();
-           return cr;
+           return ServiceResponse<CR>.Ok(cr, "CR created successfully");
         }
 
-        public async Task<CR> Update(CR cr)
+        public async Task<ServiceResponse<CR>> Update(CR cr)
         {
            var existingCr = await dbcontext.CRs.FindAsync(cr.ID);
            if (existingCr == null)
            {
-               throw new ArgumentException("CR not found");
+               return ServiceResponse<CR>.Fail("CR not found", 404);
            }
 
             existingCr.Name = cr.Name;
@@ -65,31 +70,32 @@ namespace ChangeX.BLL.Services
             existingCr.ProjectID = cr.ProjectID;
 
             await dbcontext.SaveChangesAsync();
-           return existingCr;
+           return ServiceResponse<CR>.Ok(existingCr, "CR updated successfully");
         }
 
-        public async Task Delete(Guid ID)
+        public async Task<ServiceResponse<bool>> Delete(Guid ID)
         {   
             var cr = await dbcontext.CRs.FindAsync(ID);
             if (cr == null)
             {
-                throw new ArgumentException("cr not found");
+                return ServiceResponse<bool>.Fail("CR not found", 404);
             }
             dbcontext.Remove(cr);
             await dbcontext.SaveChangesAsync();
+            return ServiceResponse<bool>.Ok(true, "CR deleted successfully");
         }
 
-        public async Task<CR> ChangeStatus( Guid TargetStatusID,CR currentCR)
+        public async Task<ServiceResponse<CR>> ChangeStatus( Guid TargetStatusID,CR currentCR)
         {
             var currentStatus = currentCR.CurrentStatus;
 
             var availableStatus = currentStatus.AvailableStatusIDs.Split(",").Select(Guid.Parse).ToList();
 
             if ( availableStatus==null) {
-                throw new Exception($"Status not found.");
+                return ServiceResponse<CR>.Fail("Status not found.");
             }
             if ( currentCR==null) {
-                throw new Exception($"CR not found.");
+                return ServiceResponse<CR>.Fail("CR not found.");
             }
 
             foreach (var status in availableStatus)
@@ -97,14 +103,15 @@ namespace ChangeX.BLL.Services
                 if (status == TargetStatusID)
                 {
                  currentCR.CurrentStatusID=TargetStatusID; 
-                   
+                 currentCR.CurrentStatus = await dbcontext.CRStatues.FindAsync(TargetStatusID);
                 }
             }
             if(currentCR.CurrentStatusID != TargetStatusID)
             {
-                //return new Exception("Target status not accessible");
+                return ServiceResponse<CR>.Fail("Target status not accessible");
             }
-            return currentCR;
+            await dbcontext.SaveChangesAsync();
+            return ServiceResponse<CR>.Ok(currentCR, "CR status changed successfully");
 
         }
     }

@@ -3,7 +3,6 @@ using ChangeX.BLL.DTOs;
 using ChangeX.BLL.Interfaces;
 using ChangeX.DAL.Entities;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
 
@@ -36,12 +35,15 @@ namespace ChangeX.API.Controllers.Admin
                     (string.IsNullOrWhiteSpace(name) || cr.Name.Contains(name));
             }
 
-            var crs = await _crService.GetAll(predicate);
-            var data = _mapper.Map<IEnumerable<CRResponseDto>>(crs);
+            var result = await _crService.GetAll(predicate);
+            if (!result.Success)
+                return StatusCode(result.StatusCode, new { message = result.Message });
+
+            var data = _mapper.Map<IEnumerable<CRResponseDto>>(result.Data);
 
             return Ok(new
             {
-                message = "Get all CRs",
+                message = result.Message,
                 data
             });
         }
@@ -50,21 +52,15 @@ namespace ChangeX.API.Controllers.Admin
         [HttpGet("{id}")]
         public async Task<IActionResult> GetCRById(Guid id)
         {
-            var cr = await _crService.GetByID(id);
+            var result = await _crService.GetByID(id);
+            if (!result.Success)
+                return StatusCode(result.StatusCode, new { message = result.Message });
 
-            if (cr == null)
-            {
-                return NotFound(new
-                {
-                    message = "CR not found"
-                });
-            }
-
-            var data = _mapper.Map<CRResponseDto>(cr);
+            var data = _mapper.Map<CRResponseDto>(result.Data);
 
             return Ok(new
             {
-                message = "CR found",
+                message = result.Message,
                 data
             });
         }
@@ -74,12 +70,14 @@ namespace ChangeX.API.Controllers.Admin
         public async Task<IActionResult> CreateCR([FromBody] CRDto crDto)
         {
             var cr = _mapper.Map<CR>(crDto);
-            var created = await _crService.Create(cr);
+            var result = await _crService.Create(cr);
+            if (!result.Success)
+                return StatusCode(result.StatusCode, new { message = result.Message });
 
             return Ok(new
             {
-                message = "CR created successfully",
-                data = created
+                message = result.Message,
+                data = result.Data
             });
         }
 
@@ -87,22 +85,19 @@ namespace ChangeX.API.Controllers.Admin
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateCR(Guid id, [FromBody] CRDto crDto)
         {
-            var cr = await _crService.GetByID(id);
-            if (cr == null)
-            {
-                return NotFound(new
-                {
-                    message = "CR not found"
-                });
-            }
+            var getResult = await _crService.GetByID(id);
+            if (!getResult.Success)
+                return StatusCode(getResult.StatusCode, new { message = getResult.Message });
 
-            _mapper.Map(crDto, cr);
-            var updated = await _crService.Update(cr);
+            _mapper.Map(crDto, getResult.Data);
+            var result = await _crService.Update(getResult.Data!);
+            if (!result.Success)
+                return StatusCode(result.StatusCode, new { message = result.Message });
 
             return Ok(new
             {
-                message = "CR updated successfully",
-                data = updated
+                message = result.Message,
+                data = result.Data
             });
         }
 
@@ -110,31 +105,32 @@ namespace ChangeX.API.Controllers.Admin
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteCR(Guid id)
         {
-            await _crService.Delete(id);
+            var result = await _crService.Delete(id);
+            if (!result.Success)
+                return StatusCode(result.StatusCode, new { message = result.Message });
 
             return Ok(new
             {
-                message = "CR deleted successfully"
+                message = result.Message
             });
         }
+
         [HttpPut("change_status/{id}")]
-        
         public async Task<IActionResult> ChangeStatus([FromBody] Guid id, Guid CRID)
         {
+            var crResult = await _crService.GetByID(CRID);
+            if (!crResult.Success)
+                return StatusCode(crResult.StatusCode, new { message = crResult.Message });
 
-            var cr = await _crService.GetByID(CRID);
-
-            var updatedCR = await _crService.ChangeStatus(id,cr);
-
+            var result = await _crService.ChangeStatus(id, crResult.Data!);
+            if (!result.Success)
+                return StatusCode(result.StatusCode, new { message = result.Message });
 
             return Ok(new
             {
-                message = "CR status changed successfully",
-                data= updatedCR
+                message = result.Message,
+                data = result.Data
             });
         }
     }
 }
-
-
-

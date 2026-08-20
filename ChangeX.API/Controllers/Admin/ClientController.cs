@@ -1,8 +1,6 @@
-using ChangeX.DAL.Database;
 using ChangeX.BLL.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using ChangeX.BLL.DTOs;
-using Microsoft.EntityFrameworkCore;
 using AutoMapper;
 using ChangeX.DAL.Entities;
 
@@ -25,61 +23,63 @@ namespace ChangeX.API.Controllers.Admin
         [HttpGet]
         public async Task<IActionResult> GetClients()
         {
-            var clients = await clientSercivies.GetAll();
+            var result = await clientSercivies.GetAll();
+            if (!result.Success)
+                return StatusCode(result.StatusCode, new { message = result.Message });
 
-            return Ok(new { message = "Get all clients", data = clients });
+            return Ok(new { message = result.Message, data = result.Data });
         }
 
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetClientById(Guid id)
         {
-            var client = await clientSercivies.GetByID(id);
+            var result = await clientSercivies.GetByID(id);
+            if (!result.Success)
+                return StatusCode(result.StatusCode, new { message = result.Message });
 
-            if (client is null)
-            {
-                return NotFound(new { message = "Client not found" });
-            }
-
-            return Ok(new { message = "Client found", data = client });
+            return Ok(new { message = result.Message, data = result.Data });
         }
 
         [HttpPost]
         public async Task<IActionResult> CreateClient([FromForm] ClientDto clientDto)
         {
             var client = _mapper.Map<Client>(clientDto);
-            await clientSercivies.Create(client);
+            var result = await clientSercivies.Create(client);
+            if (!result.Success)
+                return StatusCode(result.StatusCode, new { message = result.Message });
 
             return StatusCode(
                 StatusCodes.Status201Created,
-                new { message = "Client created successfully", data = client });
+                new { message = result.Message, data = result.Data });
         }
 
         [HttpPut("{id:guid}")]
         public async Task<IActionResult> UpdateClient(Guid id, [FromBody] ClientDto clientDto)
         {
-            var client = await clientSercivies.GetByID(id);
-            if (client is null)
-            {
-                return NotFound(new { message = "Client not found" });
-            }
+            var getResult = await clientSercivies.GetByID(id);
+            if (!getResult.Success)
+                return StatusCode(getResult.StatusCode, new { message = getResult.Message });
 
-            _mapper.Map(clientDto, client);
-            var updatedClient = await clientSercivies.Update(client);
+            _mapper.Map(clientDto, getResult.Data);
+            var result = await clientSercivies.Update(getResult.Data!);
+            if (!result.Success)
+                return StatusCode(result.StatusCode, new { message = result.Message });
 
-            return Ok(new { message = "Client updated successfully", data = updatedClient });
+            return Ok(new { message = result.Message, data = result.Data });
         }
 
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> DeleteClient(Guid id)
         {
-            var client = await clientSercivies.GetByID(id);
-            if (client is null)
-            {
-                return NotFound(new { message = "Client not found" });
-            }
+            var getResult = await clientSercivies.GetByID(id);
+            if (!getResult.Success)
+                return StatusCode(getResult.StatusCode, new { message = getResult.Message });
 
-            await clientSercivies.Delete(id);
-            return Ok(new { message = "Client deleted successfully" });
+            var result = await clientSercivies.Delete(id);
+            if (!result.Success)
+                return StatusCode(result.StatusCode, new { message = result.Message });
+
+            return Ok(new { message = result.Message });
         }
     }
 }

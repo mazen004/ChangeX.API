@@ -55,7 +55,9 @@ namespace ChangeX.API.Controllers.Admin
         {
             try
             {
-                await clientServices.GetByID(ClientID);
+                var clientResult = await clientServices.GetByID(ClientID);
+                if (!clientResult.Success)
+                    return StatusCode(clientResult.StatusCode, new { message = clientResult.Message });
 
                 Expression<Func<User, bool>>? predicate = null;
 
@@ -142,7 +144,9 @@ namespace ChangeX.API.Controllers.Admin
                 if (user == null)
                     return NotFound("User not found.");
 
-                await clientServices.GetByID(UserDto.ClientID);
+                var clientResult = await clientServices.GetByID(UserDto.ClientID);
+                if (!clientResult.Success)
+                    return StatusCode(clientResult.StatusCode, new { message = clientResult.Message });
 
                 if (!await userServices.CouldBeDefault(UserDto.ClientID))
                     throw new Exception("Only one Default Contact per Client");

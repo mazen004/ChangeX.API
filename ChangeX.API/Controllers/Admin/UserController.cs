@@ -8,13 +8,14 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
+using ChangeX.BLL.Interfaces;
 //using ChangeX.BLL.Interfaces;
 
 namespace ChangeX.API.Controllers.Admin
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class UserController(IMapper mapper, IUserServices userServices, IAuthService authService) : ControllerBase
+    public class UserController(IMapper mapper, IUserServices userServices, IAuthService authService, IClientServices clientServices) : ControllerBase
     {
 
         [HttpGet("GetAllUsers")]
@@ -73,12 +74,9 @@ namespace ChangeX.API.Controllers.Admin
         [HttpGet("Login")]
         public async Task<IActionResult> Login([FromQuery] string Email,[FromQuery] string Password)
         {
-            //return NotFound(new { message = "Login is not implemented." });
             try
             {
-                var user = await authService.Login(Email, Password);
-                var data = mapper.Map<UserAccountDto>(user);
-                var token = authService.CreateToken(user);
+                var token = await authService.Login(Email, Password);
                 return Ok(new { Token = token });
             }
             catch (Exception ex)

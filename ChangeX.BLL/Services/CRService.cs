@@ -81,9 +81,6 @@ namespace ChangeX.BLL.Services
 
         public async Task<CR> ChangeStatus( Guid TargetStatusID,CR currentCR)
         {
-            //var currentStatus = await dbcontext.CRStatues
-            //   .Where(c => c.ID == CurrentStatusID)
-            //   .FirstOrDefaultAsync();
             var currentStatus = currentCR.CurrentStatus;
 
             var availableStatus = currentStatus.AvailableStatusIDs.Split(",").Select(Guid.Parse).ToList();
@@ -99,13 +96,13 @@ namespace ChangeX.BLL.Services
             {
                 if (status == TargetStatusID)
                 {
-                 currentCR.CurrentStatusID=TargetStatusID;
+                 currentCR.CurrentStatusID=TargetStatusID; 
                    
                 }
             }
             if(currentCR.CurrentStatusID != TargetStatusID)
             {
-                throw new Exception("Target status not accessible");
+                //return new Exception("Target status not accessible");
             }
             return currentCR;
 

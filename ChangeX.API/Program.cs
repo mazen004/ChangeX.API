@@ -19,7 +19,6 @@ namespace ChangeX.API
             builder.Services.AddOpenApi();
 
             builder.Services.AddScoped<IUserServices, UserServices>();
-            //builder.Services.AddScoped<ICRService, CRService>();
             builder.Services.AddScoped<IProjectService, ProjectService>();
 
             builder.Services.AddScoped<IClientServices, ClientServices>();
@@ -31,7 +30,8 @@ namespace ChangeX.API
             builder.Services.AddAutoMapper(cfg =>
             {
                 cfg.AddProfile<MappingClientProfile>();
-                //cfg.AddProfile<UserProfile>();
+                cfg.AddProfile<MappingUserProfile>();
+                cfg.AddProfile<MappingCRProfile>();
             });
             builder.Services.AddCors();
 

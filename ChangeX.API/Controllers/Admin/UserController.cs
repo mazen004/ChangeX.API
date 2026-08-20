@@ -5,7 +5,6 @@ using ChangeX.DAL.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq.Expressions;
-//using ChangeX.BLL.Interfaces;
 
 namespace ChangeX.API.Controllers.Admin
 {
@@ -28,7 +27,7 @@ namespace ChangeX.API.Controllers.Admin
                         query = query.Trim();
                     }
                     predicate = u => (query != null && (u.Name.Contains(query) || u.Email.Contains(query))
-                                      && (systemRole.HasValue && u.SystemRole == systemRole.Value));
+                                      && (!systemRole.HasValue || u.SystemRole == systemRole.Value));
                 }
 
                 var users = await userServices.GetAll(predicate);
@@ -92,8 +91,8 @@ namespace ChangeX.API.Controllers.Admin
             }
         }
 
-        [HttpGet("Login")]
-        public async Task<IActionResult> Login([FromQuery] LoginDto loginDto)
+        [HttpPost("Login")]
+        public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
         {
             try
             {
@@ -126,7 +125,8 @@ namespace ChangeX.API.Controllers.Admin
                 return BadRequest(new { message = ex.Message });
             }
         }
-
+        
+        [Authorize]
         [HttpPut("UpdateUser/{ID:Guid}")]
         public async Task<IActionResult> UpdateUser(Guid ID, [FromForm] UpdateUserDto UserDto)
         {
@@ -153,6 +153,7 @@ namespace ChangeX.API.Controllers.Admin
             }
         }
 
+        [Authorize]
         [HttpDelete("DeleteUser/{ID:Guid}")]
         public async Task<IActionResult> DeleteUser(Guid ID)
         {

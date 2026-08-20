@@ -49,12 +49,14 @@ namespace ChangeX.BLL.Services
                         .Include(u => u.Client)
                         .FirstOrDefaultAsync();
 
-                
+            
+
             return user;
         }
 
         public async Task<User> UpdateUser(User User)
         {
+            User.Password = new PasswordHasher<User>().HashPassword(User, User.Password);
             dbContex.Users.Update(User);
             await dbContex.SaveChangesAsync();
             return User;

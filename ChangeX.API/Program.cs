@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
-using Microsoft.OpenApi.Models;
 using System.Text;
 
 namespace ChangeX.API
@@ -62,19 +61,10 @@ namespace ChangeX.API
                     Description = "Enter your JWT token"
                 });
 
-                options.AddSecurityRequirement(new OpenApiSecurityRequirement
+                // NEW API for Swashbuckle 10 / OpenAPI.NET 2.x
+                options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
                 {
-                    {
-                        new OpenApiSecurityScheme
-                        {
-                            Reference = new OpenApiReference // error
-                            {
-                                Type = ReferenceType.SecurityScheme,
-                                Id = "Bearer"
-                            }
-                        },
-                        Array.Empty<string>()
-                    }
+                    [new OpenApiSecuritySchemeReference("Bearer", document)] = []
                 });
             });
 

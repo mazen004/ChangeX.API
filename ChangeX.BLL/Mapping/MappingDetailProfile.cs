@@ -11,6 +11,7 @@ namespace ChangeX.BLL.Mapping
             CreateMap<DetailDto, Detail>()
                 .ForMember(destination => destination.ID, options => options.Ignore())
                 .ForMember(destination => destination.CR, options => options.Ignore())
+                .ForMember(destination => destination.Attachment, options => options.Ignore())
                 .ForMember(destination => destination.State, options => options.Ignore())
                 .ForMember(destination => destination.UploadedTime, options => options.Ignore());
         }

@@ -1,6 +1,6 @@
-// using ChangeX.DAL.Database;
-// using Microsoft.AspNetCore.Mvc;
-// using Microsoft.EntityFrameworkCore;
+//using ChangeX.DAL.Database;
+//using Microsoft.AspNetCore.Mvc;
+//using Microsoft.EntityFrameworkCore;
 
 //namespace ChangeX.API.Controllers.Admin
 //{
@@ -27,9 +27,9 @@
 //                return NotFound(new { message = "No status found" });
 //            }
 
-// var availableStatuses = (currentStatus.AvailableStatusIDs ?? string.Empty)
-//     .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-//     .ToList();
+//            var availableStatuses = (currentStatus.AvailableStatusIDs ?? string.Empty)
+//                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+//                .ToList();
 
 //            return Ok(new
 //            {
@@ -53,7 +53,7 @@
 //                return NotFound(new { message = "CR not found" });
 //            }
 
-//            var availableStatuses = cr.CurrentStatus.AvailableStatuses
+//            var availableStatuses = cr.CurrentStatus.AvailableStatus
 //                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
 //                .ToList();
 

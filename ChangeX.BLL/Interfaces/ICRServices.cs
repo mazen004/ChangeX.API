@@ -10,6 +10,9 @@ namespace ChangeX.BLL.Interfaces
         Task<CR> Create(CR cr);
         Task<CR> Update(CR cr);
         Task Delete(Guid ID);
+        Task<CR> ChangeStatus(Guid TargetStatusID, CR cr);
+        
+           
     }
 }
 

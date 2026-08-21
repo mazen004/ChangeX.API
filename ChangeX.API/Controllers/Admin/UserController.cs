@@ -10,7 +10,8 @@ namespace ChangeX.API.Controllers.Admin
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class UserController(IMapper mapper, IUserServices userServices, IAuthService authService, IClientServices clientServices) : ControllerBase
+    [Authorize]
+    public class UserController(IMapper mapper, IUserServices userServices,IClientServices clientServices) : ControllerBase
     {
         [Authorize(Roles ="Admin")]
         [HttpGet("GetAllUsers")]
@@ -39,7 +40,7 @@ namespace ChangeX.API.Controllers.Admin
             }
             catch (Exception ex)
             {
-                return BadRequest(new {message = ex.Message});
+                return BadRequest(new { message = ex.Message, innerExeption = ex.InnerException });
             }
         }
 
@@ -64,12 +65,11 @@ namespace ChangeX.API.Controllers.Admin
                 if (users == null)
                     return NotFound("Users not found.");
                 var data = mapper.Map<IEnumerable<UserInClientDto>>(users);
-                //data.SystemRole = users.SystemRole ? "Admin" : "False";
                 return Ok(data);
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message });
+                return BadRequest(new { message = ex.Message, innerExeption = ex.InnerException });
             }
         }
 
@@ -87,21 +87,7 @@ namespace ChangeX.API.Controllers.Admin
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message });
-            }
-        }
-
-        [HttpPost("Login")]
-        public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
-        {
-            try
-            {
-                var token = await authService.Login(mapper.Map<User>(loginDto));
-                return Ok(new { Token = token });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
+                return BadRequest(new { message = ex.Message, innerExeption = ex.InnerException });
             }
         }
 
@@ -111,18 +97,18 @@ namespace ChangeX.API.Controllers.Admin
         {
             try
             {
-                if (await userServices.IsUserFound(User.Email))
-                    throw new Exception("User is already registered");
+                var InputUser = mapper.Map<User>(User);
 
-                var user = mapper.Map<User>(User);
+                var AddedUser =  await userServices.AddUser(InputUser);
 
-                await userServices.AddUser(user);
+                if(!AddedUser.Success)
+                    return StatusCode(AddedUser.StatusCode, new { message = AddedUser.Message });
 
-                return Ok(user);
+                return Ok(new {message = AddedUser.Message, AddedUser.Data});
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message });
+                return BadRequest(new { message = ex.Message, innerExeption =  ex.InnerException});
             }
         }
         
@@ -141,15 +127,15 @@ namespace ChangeX.API.Controllers.Admin
                 if (!clientResult.Success)
                     return StatusCode(clientResult.StatusCode, new { message = clientResult.Message });
 
-                mapper.Map(UserDto, user);
+                mapper.Map(UserDto, user.Data);
 
-                await userServices.UpdateUser(user);
+                await userServices.UpdateUser(user.Data);
 
                 return Ok(user);
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message });
+                return BadRequest(new { message = ex.Message, innerExeption = ex.InnerException });
             }
         }
 
@@ -164,13 +150,13 @@ namespace ChangeX.API.Controllers.Admin
                 if (user == null)
                     return NotFound("User not found.");
 
-                await userServices.DeleteUser(user);
+                await userServices.DeleteUser(user.Data);
 
                 return Ok(new { message = "User deleted successfully." });
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message });
+                return BadRequest(new { message = ex.Message, innerExeption = ex.InnerException });
             }
         }
     }

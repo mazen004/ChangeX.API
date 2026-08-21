@@ -1,19 +1,20 @@
-﻿using ChangeX.BLL.Interfaces;
-using ChangeX.DAL.Database;
-using ChangeX.DAL.Entities;
+﻿using System.Text;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
+using Microsoft.Extensions.Configuration;
+using ChangeX.BLL.Interfaces;
+using ChangeX.DAL.Database;
+using ChangeX.DAL.Entities;
+using ChangeX.BLL.DTOs;
 
 namespace ChangeX.BLL.Services
 {
-    public sealed class AuthService(ApplicationContext dbContex, IConfiguration configuration) : IAuthService
+    public sealed class AuthService(ApplicationContext dbContex, IConfiguration configuration, IUserServices userServices) : IAuthService
     {
-        public async Task<string> Login(User User)
+        public async Task<ServiceResponse<string>> Login(User User)
         {
             var user = await dbContex.Users
                         .Where(u => u.Email == User.Email)
@@ -21,22 +22,34 @@ namespace ChangeX.BLL.Services
                         .FirstOrDefaultAsync();
 
             if (user is null)
-                throw new Exception($"Email is incorrect.");
+                return ServiceResponse<string> .Fail(" Login Failes: Email or Password is incorrect.", 404 );
             if(new PasswordHasher<User>().VerifyHashedPassword(user, user.Password, User.Password) == PasswordVerificationResult.Failed)
-                throw new Exception($"Password is incorrect.");
+                return ServiceResponse<string> .Fail(" Login Failes: Email or Password is incorrect.", 404 );
 
-            return CreateToken(user);
+            var token = await CreateToken(user);
+            return ServiceResponse<string>.Ok(token, "Login successful. Role: " + await LoginRole(user) );
         }
 
-        private string CreateToken(User User)
+        private async Task<string> LoginRole(User User)
         {
-            var IAdmin = User.SystemRole ? "Admin" : "User";
+
+            var IsUserAdmin = await userServices.IsInCLient(User.ClientID, User.ID);
+
+            return User.SystemRole ? "Admin"
+                : IsUserAdmin.Data ? "UserAdmin"
+                : "User";
+        }
+
+        private async Task<string> CreateToken(User User)
+        {
+            var Role = await LoginRole(User);
+
             var Clamis = new List<Claim>
             {
                 new Claim (ClaimTypes.NameIdentifier, User.ID.ToString()),
                 new Claim (ClaimTypes.Name, User.Name),
                 new Claim (ClaimTypes.Email, User.Email),
-                new Claim (ClaimTypes.Role, IAdmin),
+                new Claim (ClaimTypes.Role, Role),
             };
 
             var Key = new SymmetricSecurityKey(
@@ -48,7 +61,7 @@ namespace ChangeX.BLL.Services
                 issuer: configuration.GetValue<string>("AppSettings:Issuer"),
                 audience: configuration.GetValue<string>("AppSettings:Audience"),
                 claims: Clamis,
-                expires: DateTime.UtcNow.AddMinutes(30),
+                expires: DateTime.UtcNow.AddMinutes(configuration.GetValue<int>("AppSettings:ExpireTime")),
                 signingCredentials: Creds
                 );
 

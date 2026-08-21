@@ -10,6 +10,7 @@ namespace ChangeX.DAL.Entities
         public string Name { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
+        public string PhoneNumber { get; set; }
         public bool SystemRole { get; set; } = false;
         //public bool IsActive { get; set; } = true; // softDelete
         //public DateTime? InActiveAt { get; set; }

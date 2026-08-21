@@ -1,17 +1,18 @@
-using ChangeX.DAL.Entities;
 using System.Linq.Expressions;
+using ChangeX.BLL.DTOs;
+using ChangeX.DAL.Entities;
 
 namespace ChangeX.BLL.Interfaces
 {
     public interface IUserServices
     {
-        public Task<IEnumerable<User>> GetAll(Expression<Func<User, bool>>? predicate);
-        public Task<IEnumerable<User>> GetAll(Guid ClientID, Expression<Func<User, bool>>? predicate);
-        public Task<User> GetByID(Guid ID);
-        public Task AddUser(User User);
-        //public Task<bool> CouldBeDefault(Guid ClientID);
-        public Task<bool> IsUserFound(string Email);
-        public Task<User> UpdateUser(User User);
-        public Task DeleteUser(User User);
+        public Task<ServiceResponse<IEnumerable<User>>> GetAll(Expression<Func<User, bool>>? predicate);
+        public Task<ServiceResponse<IEnumerable<User>>> GetAll(Guid ClientID, Expression<Func<User, bool>>? predicate);
+        public Task<ServiceResponse<User>> GetByID(Guid ID);
+        public Task<ServiceResponse<User>> AddUser(User User);
+        public Task<ServiceResponse<User>> UpdateUser(User User);
+        public Task<ServiceResponse<bool>> DeleteUser(User User);
+        public Task<ServiceResponse<bool>> IsUserExists(string Email, string PhoneNumber);
+        public Task<ServiceResponse<bool>> IsInCLient(Guid ClientID, Guid UserID);
     }
 }

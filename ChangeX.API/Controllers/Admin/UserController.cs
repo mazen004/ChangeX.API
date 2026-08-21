@@ -32,9 +32,9 @@ namespace ChangeX.API.Controllers.Admin
                 }
 
                 var users = await userServices.GetAll(predicate);
-                if (users == null)
+                if (!users.Success)
                     return NotFound("Users not found.");
-                var data = mapper.Map<IEnumerable<UserAccountDto>>(users);
+                var data = mapper.Map<IEnumerable<UserAccountDto>>(users.Data);
 
                 return Ok(data);
             }
@@ -62,9 +62,9 @@ namespace ChangeX.API.Controllers.Admin
                     predicate = u => query != null && (u.Name.Contains(query) || u.Email.Contains(query));
                 }
                 var users = await userServices.GetAll(ClientID, predicate);
-                if (users == null)
+                if (users.Data == null)
                     return NotFound("Users not found.");
-                var data = mapper.Map<IEnumerable<UserInClientDto>>(users);
+                var data = mapper.Map<IEnumerable<UserInClientDto>>(users.Data);
                 return Ok(data);
             }
             catch (Exception ex)
@@ -82,7 +82,7 @@ namespace ChangeX.API.Controllers.Admin
                 var user = await userServices.GetByID(ID);
                 if (user == null)
                     return NotFound("User not found.");
-                var data = mapper.Map<UserAccountDto>(user);
+                var data = mapper.Map<UserAccountDto>(user.Data);
                 return Ok(data);
             }
             catch (Exception ex)
@@ -93,7 +93,7 @@ namespace ChangeX.API.Controllers.Admin
 
         [Authorize(Roles = "Admin")]
         [HttpPost("AddUser")]
-        public async Task<IActionResult> AddUser([FromForm] AddUserDto User)
+        public async Task<IActionResult> AddUser(AddUserDto User)
         {
             try
             {
@@ -113,8 +113,8 @@ namespace ChangeX.API.Controllers.Admin
         }
         
         [Authorize]
-        [HttpPut("UpdateUser/{ID:Guid}")]
-        public async Task<IActionResult> UpdateUser(Guid ID, [FromForm] UpdateUserDto UserDto)
+        [HttpPut("UpdateUser")]
+        public async Task<IActionResult> UpdateUser([FromQuery]Guid ID, UpdateUserDto UserDto)
         {
             try
             {

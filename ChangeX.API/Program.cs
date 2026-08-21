@@ -40,9 +40,9 @@ namespace ChangeX.API
 
             builder.Services.AddScoped<IUserServices, UserServices>();
             builder.Services.AddScoped<IAuthService, AuthService>();
-
+            builder.Services.AddHttpContextAccessor();
             builder.Services.AddScoped<IProjectService, ProjectService>();
-
+            builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
             builder.Services.AddScoped<IClientServices, ClientServices>();
             builder.Services.AddScoped<ICRServices, CRService>();
             builder.Services.AddScoped<IDetailServices, DetailServices>();

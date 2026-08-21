@@ -50,6 +50,7 @@ namespace ChangeX.BLL.Services
                 new Claim (ClaimTypes.Name, User.Name),
                 new Claim (ClaimTypes.Email, User.Email),
                 new Claim (ClaimTypes.Role, Role),
+                new Claim("ClientID", User.ClientID.ToString())
             };
 
             var Key = new SymmetricSecurityKey(

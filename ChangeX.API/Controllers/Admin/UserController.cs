@@ -11,135 +11,298 @@ namespace ChangeX.API.Controllers.Admin
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-    public class UserController(IMapper mapper, IUserServices userServices,IClientServices clientServices) : ControllerBase
+    public class UserController(
+        IMapper mapper,
+        IUserServices userServices,
+        IClientServices clientServices,
+        ICurrentUserService currentUser) : ControllerBase
     {
-        [Authorize(Roles ="Admin")]
+        // =========================================================
+        // GET ALL USERS
+        // Admin only
+        // =========================================================
+        [Authorize(Roles = "Admin")]
         [HttpGet("GetAllUsers")]
-        public async Task<IActionResult> GetAllUsers([FromQuery] string? query, bool? systemRole)
+        public async Task<IActionResult> GetAllUsers(
+            [FromQuery] string? query,
+            [FromQuery] bool? systemRole)
         {
             try
             {
+                if (!string.IsNullOrWhiteSpace(query))
+                {
+                    query = query.Trim();
+                }
+
                 Expression<Func<User, bool>>? predicate = null;
 
                 if (!string.IsNullOrWhiteSpace(query) || systemRole.HasValue)
                 {
-                    if (!string.IsNullOrWhiteSpace(query))
-                    {
-                        query = query.Trim();
-                    }
-                    predicate = u => (query != null && (u.Name.Contains(query) || u.Email.Contains(query))
-                                      && (!systemRole.HasValue || u.SystemRole == systemRole.Value));
+                    predicate = u =>
+                        (
+                            string.IsNullOrWhiteSpace(query) ||
+                            u.Name.Contains(query) ||
+                            u.Email.Contains(query)
+                        )
+                        &&
+                        (
+                            !systemRole.HasValue ||
+                            u.SystemRole == systemRole.Value
+                        );
                 }
 
                 var users = await userServices.GetAll(predicate);
-                if (!users.Success)
-                    return NotFound("Users not found.");
+
+                if (!users.Success || users.Data == null)
+                {
+                    return NotFound(new
+                    {
+                        message = "Users not found."
+                    });
+                }
+
                 var data = mapper.Map<IEnumerable<UserAccountDto>>(users.Data);
 
                 return Ok(data);
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message, innerExeption = ex.InnerException });
+                return BadRequest(new
+                {
+                    message = ex.Message,
+                    innerException = ex.InnerException?.Message
+                });
             }
         }
 
-        [Authorize]
+
+        // =========================================================
+        // GET ALL USERS OF A CLIENT
+        //
+        // Admin:
+        //      Can request any ClientID
+        //
+        // User:
+        //      Can only request users from his own ClientID
+        // =========================================================
         [HttpGet("GetAllUsersClient/{ClientID:Guid}")]
-        public async Task<IActionResult> GetAllUsers(Guid ClientID, [FromQuery] string? query)
+        public async Task<IActionResult> GetAllUsersClient(
+            Guid ClientID,
+            [FromQuery] string? query)
         {
             try
             {
+                // Normal user can only access his own client
+                if (currentUser.Role != "Admin" &&
+                    currentUser.ClientId != ClientID)
+                {
+                    return Forbid();
+                }
+
                 var clientResult = await clientServices.GetByID(ClientID);
-                if (!clientResult.Success)
-                    return StatusCode(clientResult.StatusCode, new { message = clientResult.Message });
+
+                if (!clientResult.Success || clientResult.Data == null)
+                {
+                    return StatusCode(
+                        clientResult.StatusCode,
+                        new
+                        {
+                            message = clientResult.Message
+                        });
+                }
 
                 Expression<Func<User, bool>>? predicate = null;
 
                 if (!string.IsNullOrWhiteSpace(query))
                 {
                     query = query.Trim();
-                    predicate = u => query != null && (u.Name.Contains(query) || u.Email.Contains(query));
+
+                    predicate = u =>
+                        u.Name.Contains(query) ||
+                        u.Email.Contains(query);
                 }
+
                 var users = await userServices.GetAll(ClientID, predicate);
-                if (users.Data == null)
-                    return NotFound("Users not found.");
+
+                if (!users.Success || users.Data == null)
+                {
+                    return NotFound(new
+                    {
+                        message = "Users not found."
+                    });
+                }
+
                 var data = mapper.Map<IEnumerable<UserInClientDto>>(users.Data);
+
                 return Ok(data);
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message, innerExeption = ex.InnerException });
+                return BadRequest(new
+                {
+                    message = ex.Message,
+                    innerException = ex.InnerException?.Message
+                });
             }
         }
 
-        [Authorize]
+
+        // =========================================================
+        // GET USER BY ID
+        //
+        // Admin:
+        //      Can get any user
+        //
+        // User:
+        //      Can only get himself
+        // =========================================================
         [HttpGet("GetUser/{ID:Guid}")]
         public async Task<IActionResult> GetUser(Guid ID)
         {
             try
             {
+                // Normal user can only access his own account
+                if (currentUser.Role != "Admin" &&
+                    currentUser.UserId != ID)
+                {
+                    return Forbid();
+                }
+
                 var user = await userServices.GetByID(ID);
-                if (user == null)
-                    return NotFound("User not found.");
+
+                if (!user.Success || user.Data == null)
+                {
+                    return NotFound(new
+                    {
+                        message = "User not found."
+                    });
+                }
+
                 var data = mapper.Map<UserAccountDto>(user.Data);
+
                 return Ok(data);
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message, innerExeption = ex.InnerException });
+                return BadRequest(new
+                {
+                    message = ex.Message,
+                    innerException = ex.InnerException?.Message
+                });
             }
         }
 
+
+        // =========================================================
+        // ADD USER
+        // Admin only
+        // =========================================================
         [Authorize(Roles = "Admin")]
         [HttpPost("AddUser")]
-        public async Task<IActionResult> AddUser(AddUserDto User)
+        public async Task<IActionResult> AddUser(AddUserDto userDto)
         {
             try
             {
-                var InputUser = mapper.Map<User>(User);
+                var inputUser = mapper.Map<User>(userDto);
 
-                var AddedUser =  await userServices.AddUser(InputUser);
+                var addedUser = await userServices.AddUser(inputUser);
 
-                if(!AddedUser.Success)
-                    return StatusCode(AddedUser.StatusCode, new { message = AddedUser.Message });
+                if (!addedUser.Success || addedUser.Data == null)
+                {
+                    return StatusCode(
+                        addedUser.StatusCode,
+                        new
+                        {
+                            message = addedUser.Message
+                        });
+                }
 
-                return Ok(new {message = AddedUser.Message, AddedUser.Data});
+                // Never return User entity directly.
+                // It contains the password hash.
+                var data = mapper.Map<UserAccountDto>(addedUser.Data);
+
+                return Ok(new
+                {
+                    message = addedUser.Message,
+                    data
+                });
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message, innerExeption =  ex.InnerException});
+                return BadRequest(new
+                {
+                    message = ex.Message,
+                    innerException = ex.InnerException?.Message
+                });
             }
         }
-        
-        [Authorize]
+
+
+        // =========================================================
+        // UPDATE USER
+        // Admin only
+        // =========================================================
+        [Authorize(Roles = "Admin")]
         [HttpPut("UpdateUser")]
-        public async Task<IActionResult> UpdateUser([FromQuery]Guid ID, UpdateUserDto UserDto)
+        public async Task<IActionResult> UpdateUser(
+            [FromQuery] Guid ID,
+            UpdateUserDto userDto)
         {
             try
             {
                 var user = await userServices.GetByID(ID);
 
-                if (user == null)
-                    return NotFound("User not found.");
+                if (!user.Success || user.Data == null)
+                {
+                    return NotFound(new
+                    {
+                        message = "User not found."
+                    });
+                }
 
-                var clientResult = await clientServices.GetByID(UserDto.ClientID);
-                if (!clientResult.Success)
-                    return StatusCode(clientResult.StatusCode, new { message = clientResult.Message });
+                // Make sure the selected Client exists
+                var clientResult = await clientServices.GetByID(userDto.ClientID);
 
-                mapper.Map(UserDto, user.Data);
+                if (!clientResult.Success || clientResult.Data == null)
+                {
+                    return StatusCode(
+                        clientResult.StatusCode,
+                        new
+                        {
+                            message = clientResult.Message
+                        });
+                }
+
+                mapper.Map(userDto, user.Data);
 
                 await userServices.UpdateUser(user.Data);
 
-                return Ok(user);
+                // Never return User entity directly
+                var data = mapper.Map<UserAccountDto>(user.Data);
+
+                return Ok(new
+                {
+                    message = "User updated successfully.",
+                    data
+                });
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message, innerExeption = ex.InnerException });
+                return BadRequest(new
+                {
+                    message = ex.Message,
+                    innerException = ex.InnerException?.Message
+                });
             }
         }
 
-        [Authorize]
+
+
+        // =========================================================
+        // DELETE USER
+        // Admin only
+        // =========================================================
+        [Authorize(Roles = "Admin")]
         [HttpDelete("DeleteUser/{ID:Guid}")]
         public async Task<IActionResult> DeleteUser(Guid ID)
         {
@@ -147,16 +310,28 @@ namespace ChangeX.API.Controllers.Admin
             {
                 var user = await userServices.GetByID(ID);
 
-                if (user == null)
-                    return NotFound("User not found.");
+                if (!user.Success || user.Data == null)
+                {
+                    return NotFound(new
+                    {
+                        message = "User not found."
+                    });
+                }
 
                 await userServices.DeleteUser(user.Data);
 
-                return Ok(new { message = "User deleted successfully." });
+                return Ok(new
+                {
+                    message = "User deleted successfully."
+                });
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message, innerExeption = ex.InnerException });
+                return BadRequest(new
+                {
+                    message = ex.Message,
+                    innerException = ex.InnerException?.Message
+                });
             }
         }
     }

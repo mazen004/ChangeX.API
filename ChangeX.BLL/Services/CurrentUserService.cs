@@ -42,6 +42,9 @@ namespace ChangeX.BLL.Services
         public string? Email =>
             User.FindFirstValue("Email");
 
+        public string? PhoneNumber =>
+            User.FindFirstValue("PhoneNumber");
+
         public string? Role =>
             User.FindFirstValue("Role");
 

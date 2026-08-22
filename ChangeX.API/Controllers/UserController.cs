@@ -33,9 +33,7 @@ namespace ChangeX.API.Controllers
                             string.IsNullOrWhiteSpace(query) ||
                             u.Name.Contains(query) ||
                             u.Email.Contains(query)
-                        )
-                        &&
-                        (
+                        ) && (
                             !systemRole.HasValue ||
                             u.SystemRole == systemRole.Value
                         );
@@ -67,7 +65,7 @@ namespace ChangeX.API.Controllers
         {
             try
             {
-                if (currentUser.Role == "User" && currentUser.ClientId != ClientID)
+                if (currentUser.Role != "Admin" && currentUser.ClientId != ClientID)
                 {
                     return Unauthorized();
                 }
@@ -130,6 +128,11 @@ namespace ChangeX.API.Controllers
                 }
 
                 var user = await userServices.GetByID(ID);
+
+                if(currentUser.Role == "UserAdmin" && user.Data?.ClientID != currentUser.ClientId)
+                {
+                    return Unauthorized();
+                }
 
                 if (!user.Success)
                 {

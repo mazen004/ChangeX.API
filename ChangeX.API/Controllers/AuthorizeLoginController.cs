@@ -6,12 +6,12 @@ using ChangeX.BLL.Interfaces;
 
 namespace ChangeX.API.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/Auth/Login")]
     [ApiController]
 
     public class AuthorizeLoginController(IMapper mapper, IAuthService authService) : Controller
     {
-        [HttpPost("Login")]
+        [HttpPost]
         public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
         {
             try
@@ -21,7 +21,7 @@ namespace ChangeX.API.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message });
+                return BadRequest(new { message = ex.Message, innerException = ex.InnerException?.Message });
             }
         }
     }

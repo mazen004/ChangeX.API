@@ -6,26 +6,16 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq.Expressions;
 
-namespace ChangeX.API.Controllers.Admin
+namespace ChangeX.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-    public class UserController(
-        IMapper mapper,
-        IUserServices userServices,
-        IClientServices clientServices,
-        ICurrentUserService currentUser) : ControllerBase
+    public class UserController( IMapper mapper, IUserServices userServices, IClientServices clientServices, ICurrentUserService currentUser) : ControllerBase
     {
-        // =========================================================
-        // GET ALL USERS
-        // Admin only
-        // =========================================================
-        [Authorize(Roles = "Admin")]
-        [HttpGet("GetAllUsers")]
-        public async Task<IActionResult> GetAllUsers(
-            [FromQuery] string? query,
-            [FromQuery] bool? systemRole)
+
+        [HttpGet("GetAllUsers"), Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetAllUsers([FromQuery] string? query, [FromQuery] bool? systemRole)
         {
             try
             {
@@ -53,12 +43,9 @@ namespace ChangeX.API.Controllers.Admin
 
                 var users = await userServices.GetAll(predicate);
 
-                if (!users.Success || users.Data == null)
+                if (!users.Success)
                 {
-                    return NotFound(new
-                    {
-                        message = "Users not found."
-                    });
+                    return StatusCode(users.StatusCode, users.Message);
                 }
 
                 var data = mapper.Map<IEnumerable<UserAccountDto>>(users.Data);
@@ -74,34 +61,20 @@ namespace ChangeX.API.Controllers.Admin
                 });
             }
         }
-
-
-        // =========================================================
-        // GET ALL USERS OF A CLIENT
-        //
-        // Admin:
-        //      Can request any ClientID
-        //
-        // User:
-        //      Can only request users from his own ClientID
-        // =========================================================
+        
         [HttpGet("GetAllUsersClient/{ClientID:Guid}")]
-        public async Task<IActionResult> GetAllUsersClient(
-            Guid ClientID,
-            [FromQuery] string? query)
+        public async Task<IActionResult> GetAllUsersClient(Guid ClientID, [FromQuery] string? query)
         {
             try
             {
-                // Normal user can only access his own client
-                if (currentUser.Role != "Admin" &&
-                    currentUser.ClientId != ClientID)
+                if (currentUser.Role!= "Admin" && currentUser.ClientId != ClientID)
                 {
-                    return Forbid();
+                    return Unauthorized();
                 }
 
                 var clientResult = await clientServices.GetByID(ClientID);
 
-                if (!clientResult.Success || clientResult.Data == null)
+                if (!clientResult.Success)
                 {
                     return StatusCode(
                         clientResult.StatusCode,
@@ -146,36 +119,21 @@ namespace ChangeX.API.Controllers.Admin
             }
         }
 
-
-        // =========================================================
-        // GET USER BY ID
-        //
-        // Admin:
-        //      Can get any user
-        //
-        // User:
-        //      Can only get himself
-        // =========================================================
         [HttpGet("GetUser/{ID:Guid}")]
         public async Task<IActionResult> GetUser(Guid ID)
         {
             try
             {
-                // Normal user can only access his own account
-                if (currentUser.Role != "Admin" &&
-                    currentUser.UserId != ID)
+                if (currentUser.Role == "User" && currentUser.UserId != ID)
                 {
                     return Forbid();
                 }
 
                 var user = await userServices.GetByID(ID);
 
-                if (!user.Success || user.Data == null)
+                if (!user.Success)
                 {
-                    return NotFound(new
-                    {
-                        message = "User not found."
-                    });
+                    return StatusCode(user.StatusCode, new { message = user.Message });
                 }
 
                 var data = mapper.Map<UserAccountDto>(user.Data);
@@ -192,11 +150,6 @@ namespace ChangeX.API.Controllers.Admin
             }
         }
 
-
-        // =========================================================
-        // ADD USER
-        // Admin only
-        // =========================================================
         [Authorize(Roles = "Admin")]
         [HttpPost("AddUser")]
         public async Task<IActionResult> AddUser(AddUserDto userDto)
@@ -217,8 +170,6 @@ namespace ChangeX.API.Controllers.Admin
                         });
                 }
 
-                // Never return User entity directly.
-                // It contains the password hash.
                 var data = mapper.Map<UserAccountDto>(addedUser.Data);
 
                 return Ok(new
@@ -237,54 +188,33 @@ namespace ChangeX.API.Controllers.Admin
             }
         }
 
-
-        // =========================================================
-        // UPDATE USER
-        // Admin only
-        // =========================================================
         [Authorize(Roles = "Admin")]
         [HttpPut("UpdateUser")]
-        public async Task<IActionResult> UpdateUser(
-            [FromQuery] Guid ID,
-            UpdateUserDto userDto)
+        public async Task<IActionResult> UpdateUser([FromQuery] Guid ID, [FromBody] UpdateUserDto userDto)
         {
             try
             {
                 var user = await userServices.GetByID(ID);
 
-                if (!user.Success || user.Data == null)
+                if (!user.Success)
                 {
-                    return NotFound(new
-                    {
-                        message = "User not found."
-                    });
+                    return StatusCode( user.StatusCode, new { message = user.Message });
                 }
 
-                // Make sure the selected Client exists
                 var clientResult = await clientServices.GetByID(userDto.ClientID);
 
-                if (!clientResult.Success || clientResult.Data == null)
+                if (!clientResult.Success)
                 {
-                    return StatusCode(
-                        clientResult.StatusCode,
-                        new
-                        {
-                            message = clientResult.Message
-                        });
+                    return StatusCode(clientResult.StatusCode, new { message = clientResult.Message });
                 }
 
                 mapper.Map(userDto, user.Data);
 
                 await userServices.UpdateUser(user.Data);
 
-                // Never return User entity directly
                 var data = mapper.Map<UserAccountDto>(user.Data);
 
-                return Ok(new
-                {
-                    message = "User updated successfully.",
-                    data
-                });
+                return Ok(new { message = "User updated successfully.", data});
             }
             catch (Exception ex)
             {
@@ -296,15 +226,9 @@ namespace ChangeX.API.Controllers.Admin
             }
         }
 
-
-
-        // =========================================================
-        // DELETE USER
-        // Admin only
-        // =========================================================
         [Authorize(Roles = "Admin")]
-        [HttpDelete("DeleteUser/{ID:Guid}")]
-        public async Task<IActionResult> DeleteUser(Guid ID)
+        [HttpDelete("DeleteUser/")]
+        public async Task<IActionResult> DeleteUser([FromQuery] Guid ID)
         {
             try
             {
@@ -312,10 +236,8 @@ namespace ChangeX.API.Controllers.Admin
 
                 if (!user.Success || user.Data == null)
                 {
-                    return NotFound(new
-                    {
-                        message = "User not found."
-                    });
+
+                    return StatusCode(user.StatusCode, new { message = user.Message });
                 }
 
                 await userServices.DeleteUser(user.Data);

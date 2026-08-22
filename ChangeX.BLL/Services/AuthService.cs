@@ -22,9 +22,9 @@ namespace ChangeX.BLL.Services
                         .FirstOrDefaultAsync();
 
             if (user is null)
-                return ServiceResponse<string> .Fail(" Login Failes: Email or Password is incorrect.", 404 );
+                return ServiceResponse<string> .Fail(" Login Failes: Email is incorrect.", 404 );
             if(new PasswordHasher<User>().VerifyHashedPassword(user, user.Password, User.Password) == PasswordVerificationResult.Failed)
-                return ServiceResponse<string> .Fail(" Login Failes: Email or Password is incorrect.", 404 );
+                return ServiceResponse<string> .Fail(" Login Failes: Password is incorrect.", 404 );
 
             var token = await CreateToken(user);
             return ServiceResponse<string>.Ok(token, "Login successful. Role: " + await LoginRole(user) );
@@ -46,10 +46,11 @@ namespace ChangeX.BLL.Services
 
             var Clamis = new List<Claim>
             {
-                new Claim (ClaimTypes.NameIdentifier, User.ID.ToString()),
-                new Claim (ClaimTypes.Name, User.Name),
-                new Claim (ClaimTypes.Email, User.Email),
-                new Claim (ClaimTypes.Role, Role),
+                new Claim ("UserID", User.ID.ToString()),
+                new Claim ("Name", User.Name),
+                new Claim ("Email", User.Email),
+                new Claim ("PhoneNumber", User.PhoneNumber),
+                new Claim ("Role", Role),
                 new Claim("ClientID", User.ClientID.ToString())
             };
 

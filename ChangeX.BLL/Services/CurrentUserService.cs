@@ -16,7 +16,7 @@ namespace ChangeX.BLL.Services
         {
             get
             {
-                var value = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                var value = User.FindFirstValue("UserID");
 
                 return Guid.TryParse(value, out var id)
                     ? id
@@ -37,13 +37,13 @@ namespace ChangeX.BLL.Services
         }
 
         public string? Name =>
-            User.FindFirstValue(ClaimTypes.Name);
+            User.FindFirstValue("Name");
 
         public string? Email =>
-            User.FindFirstValue(ClaimTypes.Email);
+            User.FindFirstValue("Email");
 
         public string? Role =>
-            User.FindFirstValue(ClaimTypes.Role);
+            User.FindFirstValue("Role");
 
         public bool IsAuthenticated =>
             User.Identity?.IsAuthenticated == true;

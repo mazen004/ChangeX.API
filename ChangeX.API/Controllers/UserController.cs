@@ -67,7 +67,7 @@ namespace ChangeX.API.Controllers
         {
             try
             {
-                if (currentUser.Role!= "Admin" && currentUser.ClientId != ClientID)
+                if (currentUser.Role == "User" && currentUser.ClientId != ClientID)
                 {
                     return Unauthorized();
                 }
@@ -126,7 +126,7 @@ namespace ChangeX.API.Controllers
             {
                 if (currentUser.Role == "User" && currentUser.UserId != ID)
                 {
-                    return Forbid();
+                    return Unauthorized();
                 }
 
                 var user = await userServices.GetByID(ID);

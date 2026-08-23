@@ -230,7 +230,7 @@ namespace ChangeX.API.Controllers
         }
 
         [Authorize(Roles = "Admin")]
-        [HttpDelete("DeleteUser/")]
+        [HttpDelete("DeleteUser")]
         public async Task<IActionResult> DeleteUser([FromQuery] Guid ID)
         {
             try

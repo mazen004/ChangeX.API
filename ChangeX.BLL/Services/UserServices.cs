@@ -101,7 +101,7 @@ namespace ChangeX.BLL.Services
             return ServiceResponse<bool>.Ok(true, "User deleted");
         }
 
-        public async Task<ServiceResponse<bool>> IsInCLient(Guid ClientID, Guid UserID)
+        public async Task<ServiceResponse<bool>> IsInClient(Guid ClientID, Guid UserID)
         {
             var isDefaultContact = await dbContex.Clients
                         .AnyAsync(c => c.ID == ClientID && c.DefaultContactID == UserID);

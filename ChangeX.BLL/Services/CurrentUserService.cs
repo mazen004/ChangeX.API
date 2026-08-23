@@ -37,16 +37,16 @@ namespace ChangeX.BLL.Services
         }
 
         public string? Name =>
-            User.FindFirstValue("Name");
+            User.FindFirstValue(ClaimTypes.Name);
 
         public string? Email =>
-            User.FindFirstValue("Email");
+            User.FindFirstValue(ClaimTypes.Email);
 
         public string? PhoneNumber =>
             User.FindFirstValue("PhoneNumber");
 
         public string? Role =>
-            User.FindFirstValue("Role");
+            User.FindFirstValue(ClaimTypes.Role);
 
         public bool IsAuthenticated =>
             User.Identity?.IsAuthenticated == true;

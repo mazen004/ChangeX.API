@@ -33,7 +33,7 @@ namespace ChangeX.BLL.Services
         private async Task<string> LoginRole(User User)
         {
 
-            var IsUserAdmin = await userServices.IsInCLient(User.ClientID, User.ID);
+            var IsUserAdmin = await userServices.IsInClient(User.ClientID, User.ID);
 
             return User.SystemRole ? "Admin"
                 : IsUserAdmin.Data ? "UserAdmin"
@@ -47,10 +47,10 @@ namespace ChangeX.BLL.Services
             var Clamis = new List<Claim>
             {
                 new Claim ("UserID", User.ID.ToString()),
-                new Claim ("Name", User.Name),
-                new Claim ("Email", User.Email),
+                new Claim (ClaimTypes.Name, User.Name),
+                new Claim (ClaimTypes.Email, User.Email),
                 new Claim ("PhoneNumber", User.PhoneNumber),
-                new Claim ("Role", Role),
+                new Claim (ClaimTypes.Role, Role),
                 new Claim("ClientID", User.ClientID.ToString())
             };
 

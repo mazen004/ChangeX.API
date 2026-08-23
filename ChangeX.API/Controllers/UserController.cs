@@ -32,7 +32,8 @@ namespace ChangeX.API.Controllers
                         (
                             string.IsNullOrWhiteSpace(query) ||
                             u.Name.Contains(query) ||
-                            u.Email.Contains(query)
+                            u.Email.Contains(query) ||
+                            u.PhoneNumber.Contains(query)
                         ) && (
                             !systemRole.HasValue ||
                             u.SystemRole == systemRole.Value
@@ -90,7 +91,8 @@ namespace ChangeX.API.Controllers
 
                     predicate = u =>
                         u.Name.Contains(query) ||
-                        u.Email.Contains(query);
+                        u.Email.Contains(query) ||
+                        u.PhoneNumber.Contains(query);
                 }
 
                 var users = await userServices.GetAll(ClientID, predicate);
@@ -230,7 +232,7 @@ namespace ChangeX.API.Controllers
         }
 
         [Authorize(Roles = "Admin")]
-        [HttpDelete("DeleteUser/")]
+        [HttpDelete("DeleteUser")]
         public async Task<IActionResult> DeleteUser([FromQuery] Guid ID)
         {
             try

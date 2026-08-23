@@ -13,6 +13,6 @@ namespace ChangeX.BLL.Interfaces
         public Task<ServiceResponse<User>> UpdateUser(User User);
         public Task<ServiceResponse<bool>> DeleteUser(User User);
         public Task<ServiceResponse<bool>> IsUserExists(string Email, string PhoneNumber);
-        public Task<ServiceResponse<bool>> IsInCLient(Guid ClientID, Guid UserID);
+        public Task<ServiceResponse<bool>> IsInClient(Guid ClientID, Guid UserID);
     }
 }

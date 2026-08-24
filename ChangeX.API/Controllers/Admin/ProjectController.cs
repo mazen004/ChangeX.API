@@ -34,7 +34,7 @@ namespace ChangeX.API.Controllers
                 var projects =
                     await projectServices.GetProjectsAsync(predicate);
 
-                if (projects == null || projects.Count == 0)
+                if (projects == null )
                 {
                     return NotFound(new
                     {

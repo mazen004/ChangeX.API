@@ -1,9 +1,9 @@
 ﻿using ChangeX.BLL.DTOs;
-using ChangeX.BLL.DTOs.Users;
 using ChangeX.BLL.Interfaces;
 using ChangeX.DAL.Database;
 using ChangeX.DAL.Entities;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace ChangeX.BLL.Services
 {
@@ -15,84 +15,13 @@ namespace ChangeX.BLL.Services
         {
             this.dbcontext = dbcontext;
         }
-
-        // Get all projects
-        public List<Project> GetProjects()
-        {
-            return dbcontext.Projects.ToList();
-        }
-
-        // Get project by ID
-        public Project? GetProjectById(Guid id)
-        {
-            return dbcontext.Projects.Find(id);
-        }
-
-        // Create project
-        public Project CreateProject(ProjectDto projectDto)
-        {
-            var project = new Project()
-            {
-                ID = Guid.NewGuid(),
-                Name = projectDto.Name,
-                Description = projectDto.Description,
-                Scope = projectDto.Scope,
-                ClientID = projectDto.ClientID,
-                State = projectDto.State
-            };
-
-            dbcontext.Projects.Add(project);
-            dbcontext.SaveChanges();
-
-            return project;
-        }
-
-        // Update project
-        public Project? UpdateProject(Guid id, ProjectDto projectDto)
-        {
-            var project = dbcontext.Projects.Find(id);
-
-            if (project == null)
-            {
-                return null;
-            }
-
-            project.Name = projectDto.Name;
-            project.Description = projectDto.Description;
-            project.Scope = projectDto.Scope;
-            project.ClientID = projectDto.ClientID;
-            project.State = projectDto.State;
-
-            dbcontext.SaveChanges();
-
-            return project;
-        }
-
-        // Delete project
-        public bool DeleteProject(Guid id)
-        {
-            var project = dbcontext.Projects.Find(id);
-
-            if (project == null)
-            {
-                return false;
-            }
-
-            dbcontext.Projects.Remove(project);
-            dbcontext.SaveChanges();
-
-            return true;
-        }
-
-        // ================= Async versions =================
-
         public async Task<List<Project>> GetProjectsAsync(Guid ClientId)
         {
             return await dbcontext.Projects.Where(x=>x.ClientID == ClientId).ToListAsync();
         }
 
 
-        public async Task<List<Project>> GetProjectsAsync()
+        public async Task<List<Project>> GetProjectsAsync(Expression<Func<Project, bool>>? predicate)
         {
             return await dbcontext.Projects.ToListAsync();
         }

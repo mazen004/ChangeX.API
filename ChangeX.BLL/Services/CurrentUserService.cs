@@ -22,13 +22,13 @@ namespace ChangeX.BLL.Services
                     ? id
                     : null;
             }
-        }
+        }~
 
         public Guid? ClientId
         {
             get
             {
-                var value = User.FindFirstValue("ClientId");
+                var value = User.FindFirstValue("ClientID");
 
                 return Guid.TryParse(value, out var id)
                     ? id

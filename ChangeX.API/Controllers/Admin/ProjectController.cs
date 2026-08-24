@@ -1,143 +1,286 @@
+using AutoMapper;
 using ChangeX.BLL.DTOs;
 using ChangeX.BLL.DTOs.Users;
 using ChangeX.BLL.Interfaces;
-using ChangeX.BLL.Services;
+using ChangeX.DAL.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Linq.Expressions;
 
-namespace ChangeX.API.Controllers.Project
+namespace ChangeX.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ProjectAdminController : ControllerBase
+    [Authorize]
+    public class ProjectController(
+        IMapper mapper,
+        IProjectService projectServices,
+        ICurrentUserService currentUser) : ControllerBase
     {
-        private readonly IProjectService _projectService ;
+       
 
-        public ProjectAdminController(IProjectService projectService)
-        {
-            _projectService = projectService;
-        }
-
-        // GET: api/Project
-        [HttpGet]
-        public IActionResult GetProjects()
+        [HttpGet("GetAllProjects")]
+        public async Task<IActionResult> GetAllProjects()
         {
             try
             {
-                var projects = _projectService.GetProjectsAsync();
+                Expression<Func<Project, bool>>? predicate = null;
 
-                return Ok(new
+                if (currentUser.Role != "Admin")
                 {
-                    message = "Get all projects",
-                    data = projects
-                });
+                    predicate = p => p.ClientID == currentUser.ClientId;
+                }
+
+                var projects = await projectServices.GetProjectsAsync(predicate);
+
+                if (projects == null)
+                {
+                    return NotFound(new
+                    {
+                        message = "No projects found."
+                    });
+                }
+
+                var data = mapper.Map<IEnumerable<ProjectDto>>(
+                    projects
+                );
+
+                return Ok(data);
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message });
+                return BadRequest(new
+                {
+                    message = ex.Message,
+                    innerException = ex.InnerException?.Message
+                });
             }
         }
 
-        // GET: api/Project/{id}
-        [HttpGet("{id}")]
-        public IActionResult GetProjectById(Guid id)
+        [HttpGet("GetProject/{ID:Guid}")]
+        public async Task<IActionResult> GetProject(Guid ID)
         {
             try
             {
-                var project = _projectService.GetProjectByIdAsync(id);
+                var project =
+                    await projectServices.GetProjectByIdAsync(ID);
 
                 if (project == null)
                 {
                     return NotFound(new
                     {
-                        message = "Project not found"
+                        message = "Project not found."
                     });
                 }
 
+                if (currentUser.Role != "Admin" &&
+                    project.ClientID != currentUser.ClientId)
+                {
+                    return Unauthorized(new
+                    {
+                        message = "You are not authorized to access this project."
+                    });
+                }
+
+                var data = mapper.Map<ProjectDto>(project);
+
+                return Ok(data);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    message = ex.Message,
+                    innerException = ex.InnerException?.Message
+                });
+            }
+        }
+
+
+        [Authorize(Roles = "Admin")]
+        [HttpPost("AddProject")]
+        public async Task<IActionResult> AddProject(
+            [FromBody] CreateProjectDto projectDto)
+        {
+            try
+            {
+                if (projectDto == null)
+                {
+                    return BadRequest(new
+                    {
+                        message = "Project data is required."
+                    });
+                }
+
+                if (currentUser.Role == "UserAdmin" &&
+                    projectDto.ClientID != currentUser.ClientId)
+                {
+                    return Unauthorized(new
+                    {
+                        message = "You cannot create a project for another client."
+                    });
+                }
+
+                var createdProject = await projectServices.CreateProjectAsync(mapper.Map<Project>(projectDto));
+
+                if (createdProject == null)
+                {
+                    return BadRequest(new
+                    {
+                        message = "Failed to create project."
+                    });
+                }
+
+                var data =
+                    mapper.Map<ProjectDto>(createdProject);
+
                 return Ok(new
                 {
-                    message = "Project found",
-                    data = project
+                    message = "Project created successfully.",
+                    data
                 });
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message });
+                return BadRequest(new
+                {
+                    message = ex.Message,
+                    innerException = ex.InnerException?.Message
+                });
             }
         }
 
-        // POST: api/Project
-        [HttpPost]
-        public IActionResult CreateProject(ProjectDto projectDto)
+
+        [Authorize(Roles = "Admin,UserAdmin")]
+        [HttpPut("UpdateProject/{ID:Guid}")]
+        public async Task<IActionResult> UpdateProject(
+            Guid ID,
+            [FromBody] CreateProjectDto projectDto)
         {
             try
             {
-                var project = _projectService.CreateProjectAsync(projectDto);
+                if (projectDto == null)
+                {
+                    return BadRequest(new
+                    {
+                        message = "Project data is required."
+                    });
+                }
+
+                var existingProject =
+                    await projectServices.GetProjectByIdAsync(ID);
+
+                if (existingProject == null)
+                {
+                    return NotFound(new
+                    {
+                        message = "Project not found."
+                    });
+                }
+
+                
+                if (currentUser.Role == "UserAdmin" &&
+                    existingProject.ClientID != currentUser.ClientId)
+                {
+                    return Unauthorized(new
+                    {
+                        message = "You cannot update this project."
+                    });
+                }
+
+               
+                if (currentUser.Role == "UserAdmin" &&
+                    projectDto.ClientID != currentUser.ClientId)
+                {
+                    return Unauthorized(new
+                    {
+                        message = "You cannot move the project to another client."
+                    });
+                }
+
+                var updatedProject =
+                    await projectServices.UpdateProjectAsync(
+                        ID,
+                        mapper.Map<Project>(projectDto));
+
+                if (updatedProject == null)
+                {
+                    return NotFound(new
+                    {
+                        message = "Project not found."
+                    });
+                }
+
+                var data =
+                    mapper.Map<ProjectDto>(updatedProject);
 
                 return Ok(new
                 {
-                    message = "Project created successfully",
-                    data = project
+                    message = "Project updated successfully.",
+                    data
                 });
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message });
+                return BadRequest(new
+                {
+                    message = ex.Message,
+                    innerException = ex.InnerException?.Message
+                });
             }
         }
 
-        // PUT: api/Project/{id}
-        [HttpPut("{id}")]
-        public IActionResult UpdateProject(Guid id, ProjectDto projectDto)
+
+        [Authorize(Roles = "Admin,UserAdmin")]
+        [HttpDelete("DeleteProject/{ID:Guid}")]
+        public async Task<IActionResult> DeleteProject(Guid ID)
         {
             try
             {
-                var project = _projectService.UpdateProjectAsync(id, projectDto);
+                var project =
+                    await projectServices.GetProjectByIdAsync(ID);
 
                 if (project == null)
                 {
                     return NotFound(new
                     {
-                        message = "Project not found"
+                        message = "Project not found."
                     });
                 }
 
-                return Ok(new
+                
+                if (currentUser.Role == "UserAdmin" &&
+                    project.ClientID != currentUser.ClientId)
                 {
-                    message = "Project updated successfully",
-                    data = project
-                });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
-        }
-
-        // DELETE: api/Project/{id}
-        [HttpDelete("{id}")]
-        public async Task<ActionResult> DeleteProject(Guid id)
-        {
-            try
-            {
-                var result = await  _projectService.DeleteProjectAsync(id);
-
-
-                if (result)
-                {
-                    return NotFound(new
+                    return Unauthorized(new
                     {
-                        message = "Project not found"
+                        message = "You cannot delete this project."
+                    });
+                }
+
+                var deleted =
+                    await projectServices.DeleteProjectAsync(ID);
+
+                if (!deleted)
+                {
+                    return BadRequest(new
+                    {
+                        message = "Failed to delete project."
                     });
                 }
 
                 return Ok(new
                 {
-                    message = "project not found"
+                    message = "Project deleted successfully."
                 });
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message });
+                return BadRequest(new
+                {
+                    message = ex.Message,
+                    innerException = ex.InnerException?.Message
+                });
             }
         }
     }

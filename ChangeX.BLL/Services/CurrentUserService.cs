@@ -28,7 +28,7 @@ namespace ChangeX.BLL.Services
         {
             get
             {
-                var value = User.FindFirstValue("ClientId");
+                var value = User.FindFirstValue("ClientID");
 
                 return Guid.TryParse(value, out var id)
                     ? id

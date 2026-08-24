@@ -12,7 +12,7 @@ namespace ChangeX.API
 {
     public class Program
     {
-        public static async Task Main(string[] args)
+        public static async Task Main(string[] args) 
         {
             var builder = WebApplication.CreateBuilder(args);
 
@@ -72,6 +72,7 @@ namespace ChangeX.API
             {
                 cfg.AddProfile<MappingClientProfile>();
                 cfg.AddProfile<MappingUserProfile>();
+                cfg.AddProfile<MappingProjectProfile>();
                 cfg.AddProfile<MappingCRProfile>();
                 cfg.AddProfile<MappingDetailProfile>();
             });

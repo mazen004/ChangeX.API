@@ -13,6 +13,7 @@ namespace ChangeX.BLL.Mapping
         public MappingCRProfile()
         {
             CreateMap<CreateCRDto, CR>();
+            CreateMap<EstimateCRDto, CR>();
             CreateMap<CR, CRResponseDto>();
         }
     }

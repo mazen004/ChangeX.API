@@ -138,7 +138,7 @@ namespace ChangeX.BLL.Services
             trackedCR.CurrentStatus = targetStatus;
 
             await dbcontext.SaveChangesAsync();
-om            return ServiceResponse<CR>.Ok(
+            return ServiceResponse<CR>.Ok(
                 trackedCR,
                 "CR status changed successfully");
         }

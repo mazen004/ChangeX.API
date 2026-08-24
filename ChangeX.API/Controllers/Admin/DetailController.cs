@@ -3,13 +3,15 @@ using ChangeX.BLL.DTOs;
 using ChangeX.BLL.Interfaces;
 using ChangeX.DAL.Entities;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using System.Linq.Expressions;
 
 namespace ChangeX.API.Controllers.Admin
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class DetailController : ControllerBase
+    [Authorize]
+    public class DetailController(IDetailServices detailServices, IMapper mapper, IWebHostEnvironment environment,ICurrentUserService currentUser) : ControllerBase
     {
         private const long MaxAttachmentSizeInBytes = 10 * 1024 * 1024;
         private const long MaxUploadRequestSizeInBytes = MaxAttachmentSizeInBytes + (1024 * 1024);
@@ -33,20 +35,6 @@ namespace ChangeX.API.Controllers.Admin
                 [".png"] = new(StringComparer.OrdinalIgnoreCase) { "image/png" }
             };
 
-        private readonly IDetailServices detailServices;
-        private readonly IMapper mapper;
-        private readonly IWebHostEnvironment environment;
-
-        public DetailController(
-            IDetailServices detailServices,
-            IMapper mapper,
-            IWebHostEnvironment environment)
-        {
-            this.detailServices = detailServices;
-            this.mapper = mapper;
-            this.environment = environment;
-        }
-
         [HttpGet]
         public async Task<IActionResult> GetDetails(
             [FromQuery] Guid? crId,
@@ -62,6 +50,7 @@ namespace ChangeX.API.Controllers.Admin
             }
 
             var result = await detailServices.GetAll(predicate);
+
             if (!result.Success)
             {
                 return StatusCode(result.StatusCode, new { message = result.Message });

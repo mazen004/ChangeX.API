@@ -1,4 +1,5 @@
 using ChangeX.BLL.DTOs.Users;
+using ChangeX.DAL.Entities;
 
 namespace ChangeX.BLL.DTOs
 {
@@ -11,6 +12,6 @@ namespace ChangeX.BLL.DTOs
         public string? Address { get; set; }
         public string ContactInfo { get; set; } = string.Empty;
         public Guid? DefaultContactID { get; set; }
-        public UserInClientDto? DefaultContact { get; set; }
+        public User? DefaultContact { get; set; }
     }
 }

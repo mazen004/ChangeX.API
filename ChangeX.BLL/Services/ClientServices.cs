@@ -9,15 +9,8 @@ using System.Text;
 
 namespace ChangeX.BLL.Services
 {
-    public class ClientServices : IClientServices
+    public class ClientServices(ApplicationContext dbcontext) : IClientServices
     {
-        private readonly ApplicationContext dbcontext;
-
-        public ClientServices(ApplicationContext dbcontext)
-        {
-            this.dbcontext = dbcontext;
-        }
-
         public async Task<ServiceResponse<IEnumerable<Client>>> GetAll()
         {
             var clients = await dbcontext.Clients
@@ -48,14 +41,13 @@ namespace ChangeX.BLL.Services
             if(!await Exist(client.Email))
                 return ServiceResponse<Client>.Fail("Client with this email already exists.", 400);
 
-            var existingClient = await dbcontext.Clients
-                .Where(c => c.ID == client.ID)
-                .FirstOrDefaultAsync();
+            var existingClient = await GetByID(client.ID);
+
             if (existingClient == null)
                 return ServiceResponse<Client>.Fail("Client not found.", 404);
-            dbcontext.Clients.Update(existingClient);
+            dbcontext.Clients.Update(client);
             await dbcontext.SaveChangesAsync();
-            return ServiceResponse<Client>.Ok(existingClient, "Client updated successfully");
+            return ServiceResponse<Client>.Ok((await GetByID(client.ID)).Data!, "Client updated successfully");
         }
         public async Task<ServiceResponse<bool>> Delete(Guid ID)
         {

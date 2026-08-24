@@ -7,18 +7,12 @@ using System.Linq.Expressions;
 
 namespace ChangeX.BLL.Services
 {
-    public class ProjectService : IProjectService
+    public class ProjectService(ApplicationContext dbcontext) : IProjectService
     {
-        private readonly ApplicationContext dbcontext;
-
-        public ProjectService(ApplicationContext dbcontext)
-        {
-            this.dbcontext = dbcontext;
-        }
-        public async Task<IEnumerable<Project>> GetProjectsAsync(Guid ClientId)
-        {
-            return await dbcontext.Projects.Where(x=>x.ClientID == ClientId).ToListAsync();
-        }
+        //public async Task<IEnumerable<Project>> GetProjectsAsync(Guid ClientId)
+        //{
+        //    return await dbcontext.Projects.Where(x=>x.ClientID == ClientId).ToListAsync();
+        //}
 
 
         public async Task<IEnumerable<Project>> GetProjectsAsync(Expression<Func<Project, bool>>? predicate)

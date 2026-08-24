@@ -28,7 +28,7 @@ namespace ChangeX.API.Controllers.Admin
             }
         }
 
-        [HttpGet("cr/{CRID:guid}/available")]
+        [HttpGet("AvailableCRStatus/{CRID:guid}")]
         public async Task<IActionResult> GetAvailableStatus(Guid CRID)
         {
             try

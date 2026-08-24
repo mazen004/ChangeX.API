@@ -1,13 +1,16 @@
 ﻿using ChangeX.BLL.DTOs;
-using ChangeX.BLL.DTOs.Users;
 using ChangeX.DAL.Entities;
+using System.Linq.Expressions;
 
 namespace ChangeX.BLL.Interfaces
 {
     public interface IProjectService
     {
-        Task<List<Project>> GetProjectsAsync();
-        Task<List<Project>> GetProjectsAsync(Guid ClientId);
+        Task<List<Project>> GetProjectsAsync(
+            Expression<Func<Project, bool>>? predicate);
+
+        Task<List<Project>> GetProjectsAsync(Guid clientId);
+
         Task<Project?> GetProjectByIdAsync(Guid id);
 
         Task<Project> CreateProjectAsync(ProjectDto dto);

@@ -79,24 +79,24 @@ namespace ChangeX.API.Controllers.Admin
         }
 
         // PUT: api/CR/{id}
-        //[HttpPut("{id}")]
-        //public async Task<IActionResult> UpdateCR(Guid id, [FromBody] CreateCRDto crDto)
-        //{
-        //    var getResult = await crService.GetByID(id);
-        //    if (!getResult.Success)
-        //        return StatusCode(getResult.StatusCode, new { message = getResult.Message });
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateCR(Guid id, [FromBody] EstimateCRDto crDto)
+        {
+            var getResult = await crService.GetByID(id);
+            if (!getResult.Success)
+                return StatusCode(getResult.StatusCode, new { message = getResult.Message });
 
-        //    mapper.Map(crDto, getResult.Data);
-        //    var result = await crService.Update(getResult.Data!);
-        //    if (!result.Success)
-        //        return StatusCode(result.StatusCode, new { message = result.Message });
+            mapper.Map(crDto, getResult.Data);
+            var result = await crService.Update(getResult.Data!);
+            if (!result.Success)
+                return StatusCode(result.StatusCode, new { message = result.Message });
 
-        //    return Ok(new
-        //    {
-        //        message = result.Message,
-        //        data = result.Data
-        //    });
-        //}
+            return Ok(new
+            {
+                message = result.Message,
+                data = result.Data
+            });
+        }
 
         // DELETE: api/CR/{id}
         [HttpDelete("{id}")]

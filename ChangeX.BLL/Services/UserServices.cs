@@ -10,7 +10,6 @@ namespace ChangeX.BLL.Services
 {
     public class UserServices(ApplicationContext dbContex) : IUserServices
     {
-
         public async Task<ServiceResponse<IEnumerable<User>>> GetAll(Expression<Func<User, bool>>? predicate)
         {
             var users = dbContex.Users
@@ -114,7 +113,7 @@ namespace ChangeX.BLL.Services
 
         public async Task<ServiceResponse<bool>> IsUserExists(string Email, string PhoneNumber)
         {
-            var userExists = await dbContex.Users.AnyAsync(u => u.Email == Email || u.PhoneNumber == PhoneNumber);
+            var userExists = await dbContex.Users.AnyAsync(u => u.Email == Email && u.PhoneNumber == PhoneNumber);
 
             if (!userExists)
                 return ServiceResponse<bool>.Fail("User not found", 404);

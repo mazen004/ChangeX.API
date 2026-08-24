@@ -1,4 +1,4 @@
-    using AutoMapper;
+using AutoMapper;
 using ChangeX.BLL.DTOs;
 using ChangeX.BLL.Interfaces;
 using ChangeX.DAL.Entities;
@@ -35,10 +35,8 @@ namespace ChangeX.API.Controllers.Admin
                 [".png"] = new(StringComparer.OrdinalIgnoreCase) { "image/png" }
             };
 
-        [HttpGet]
-        public async Task<IActionResult> GetDetails(
-            [FromQuery] Guid? crId,
-            [FromQuery] string? state)
+        [HttpGet("GetDetails")]
+        public async Task<IActionResult> GetDetails([FromQuery] Guid? crId, [FromQuery] string? state)
         {
             Expression<Func<Detail, bool>>? predicate = null;
 
@@ -59,10 +57,10 @@ namespace ChangeX.API.Controllers.Admin
             return Ok(new { message = result.Message, data = result.Data });
         }
 
-        [HttpGet("{id:guid}")]
-        public async Task<IActionResult> GetDetailById(Guid id)
+        [HttpGet("GetDetail/{ID:guid}")]
+        public async Task<IActionResult> GetDetailById(Guid ID)
         {
-            var result = await detailServices.GetByID(id);
+            var result = await detailServices.GetByID(ID);
             if (!result.Success)
             {
                 return StatusCode(result.StatusCode, new { message = result.Message });
@@ -113,11 +111,11 @@ namespace ChangeX.API.Controllers.Admin
                 new { message = result.Message, data = result.Data });
         }
 
-        [HttpPut("{id:guid}")]
+        [HttpPut("Update Details")]
         [Consumes("multipart/form-data")]
         [RequestSizeLimit(MaxUploadRequestSizeInBytes)]
         [RequestFormLimits(MultipartBodyLengthLimit = MaxUploadRequestSizeInBytes)]
-        public async Task<IActionResult> UpdateDetail(Guid id, [FromForm] DetailDto detailDto)
+        public async Task<IActionResult> UpdateDetail([FromQuery] Guid ID, [FromForm] DetailDto detailDto)
         {
             if (detailDto.Attachment != null && detailDto.Attachment.Length > 0)
             {
@@ -128,7 +126,7 @@ namespace ChangeX.API.Controllers.Admin
                 }
             }
 
-            var getResult = await detailServices.GetByID(id);
+            var getResult = await detailServices.GetByID(ID);
             if (!getResult.Success)
             {
                 return StatusCode(getResult.StatusCode, new { message = getResult.Message });
@@ -177,16 +175,16 @@ namespace ChangeX.API.Controllers.Admin
             return Ok(new { message = result.Message, data = result.Data });
         }
 
-        [HttpDelete("{id:guid}")]
-        public async Task<IActionResult> DeleteDetail(Guid id)
+        [HttpDelete("Delete Details")]
+        public async Task<IActionResult> DeleteDetail(Guid ID)
         {
-            var getResult = await detailServices.GetByID(id);
+            var getResult = await detailServices.GetByID(ID);
             if (!getResult.Success)
             {
                 return StatusCode(getResult.StatusCode, new { message = getResult.Message });
             }
 
-            var result = await detailServices.Delete(id);
+            var result = await detailServices.Delete(ID);
             if (!result.Success)
             {
                 return StatusCode(result.StatusCode, new { message = result.Message });

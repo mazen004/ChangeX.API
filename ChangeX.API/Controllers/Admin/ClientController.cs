@@ -11,7 +11,7 @@ namespace ChangeX.API.Controllers.Admin
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-    public class ClientController(IClientServices clientSercivies, IMapper mapper, ICurrentUserService currentUserService) : ControllerBase
+    public class ClientController(IClientServices clientSercivies, IMapper mapper, ICurrentUserService currentUser) : ControllerBase
     {
 
         [HttpGet("GetAllClients"), Authorize(Roles = "Admin")]
@@ -41,8 +41,8 @@ namespace ChangeX.API.Controllers.Admin
         {
             try
             {
-                if (ID != currentUserService.ClientId)
-                    return Unauthorized();
+                if (ID != currentUser.ClientId)
+                    return Forbid();
                 var result = await clientSercivies.GetByID(ID);
                 if (!result.Success)
                     return StatusCode(result.StatusCode, new { message = result.Message });
@@ -61,7 +61,7 @@ namespace ChangeX.API.Controllers.Admin
         }
 
         [HttpPost("AddClient"), Authorize(Roles = "Admin")]
-        public async Task<IActionResult> CreateClient([FromForm] ClientDto clientDto)
+        public async Task<IActionResult> CreateClient([FromBody] ClientDto clientDto)
         {
             try
             {
@@ -85,8 +85,8 @@ namespace ChangeX.API.Controllers.Admin
             }
         }
 
-        [HttpPut("UpdateClient/{ID:guid}"), Authorize(Roles = "Admin")]
-        public async Task<IActionResult> UpdateClient(Guid ID, [FromBody] ClientDto clientDto)
+        [HttpPut("UpdateClient"), Authorize(Roles = "Admin")]
+        public async Task<IActionResult> UpdateClient([FromQuery] Guid ID, [FromBody] ClientDto clientDto)
         {
             try
             {
@@ -94,7 +94,7 @@ namespace ChangeX.API.Controllers.Admin
                 if (!getResult.Success)
                     return StatusCode(getResult.StatusCode, new { message = getResult.Message });
 
-                mapper.Map(clientDto, getResult.Data);
+                mapper.Map(clientDto, getResult.Data!);
                 var result = await clientSercivies.Update(getResult.Data!);
                 if (!result.Success)
                     return StatusCode(result.StatusCode, new { message = result.Message });
@@ -111,8 +111,8 @@ namespace ChangeX.API.Controllers.Admin
             }
         }
 
-        [HttpDelete("DeleteClient/{ID:guid}"), Authorize(Roles = "Admin")]
-        public async Task<IActionResult> DeleteClient(Guid ID)
+        [HttpDelete("DeleteClient"), Authorize(Roles = "Admin")]
+        public async Task<IActionResult> DeleteClient([FromQuery] Guid ID)
         {
             try
             {

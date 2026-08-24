@@ -1,4 +1,5 @@
-﻿using ChangeX.BLL.Interfaces;
+﻿using ChangeX.BLL.DTOs;
+using ChangeX.BLL.Interfaces;
 using ChangeX.DAL.Database;
 using ChangeX.DAL.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -8,16 +9,8 @@ using System.Text;
 
 namespace ChangeX.BLL.Services
 {
-    public class StatusService : IStatusService
-    {
-        private readonly ApplicationContext dbcontext;
-
-        public StatusService(ApplicationContext dbcontext)
-        {
-            this.dbcontext = dbcontext;
-        }
-
-        
+    public class StatusService(ApplicationContext dbcontext) : IStatusService
+    {       
         public async Task<CRStatus> GetCurrentStatus(Guid CRID)
         {
             var cr = await dbcontext.CRs
@@ -33,7 +26,7 @@ namespace ChangeX.BLL.Services
             return cr.CurrentStatus;
         }
 
-        public async Task<List<Guid>> GetAvailableStatus(Guid CRID)
+        public async Task<List<CurrentStatusDto>> GetAvailableStatus(Guid CRID)
         {
             var status = await GetCurrentStatus(CRID);
 
@@ -42,10 +35,19 @@ namespace ChangeX.BLL.Services
                 return [];
             }
 
-            return status.AvailableStatusIDs
+            var statusIDs = status.AvailableStatusIDs
                 .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
                 .Select(Guid.Parse)
                 .ToList();
+
+            return await dbcontext.CRStatues
+                .Where(s => statusIDs.Contains(s.ID))
+                .Select(s => new CurrentStatusDto
+                {
+                    ID = s.ID,
+                    CurrentStatus = s.CurrentStatus,
+                }).ToListAsync();
+
         }
         
     }

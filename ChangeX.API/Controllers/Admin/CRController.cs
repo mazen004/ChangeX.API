@@ -16,7 +16,7 @@ namespace ChangeX.API.Controllers.Admin
 
         // GET: api/CR
         [HttpGet]
-        [Authorize (Roles ="admin")]
+        [Authorize (Roles ="Admin")]
         public async Task<IActionResult> GetAllCRs([FromQuery] Guid? projectId, [FromQuery] Guid? ClientID, [FromQuery] Guid? statusId, [FromQuery] string? name)
         {
             Expression<Func<CR, bool>>? predicate = null;

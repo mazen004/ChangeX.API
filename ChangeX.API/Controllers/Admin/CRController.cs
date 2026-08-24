@@ -13,8 +13,6 @@ namespace ChangeX.API.Controllers.Admin
     [Authorize]
     public class CRController(ICurrentUserService currentUser, ICRServices crService, IMapper mapper) : ControllerBase 
     {
-
-        // GET: api/CR
         [HttpGet]
         public async Task<IActionResult> GetAllCRs([FromQuery] Guid? projectId, [FromQuery] Guid? ClientID, [FromQuery] Guid? statusId, [FromQuery] string? name)
         {
@@ -45,7 +43,6 @@ namespace ChangeX.API.Controllers.Admin
             });
         }
 
-        // GET: api/CR/{ID}
         [HttpGet("{ID}")]
         public async Task<IActionResult> GetCRById(Guid ID)
         {
@@ -62,7 +59,6 @@ namespace ChangeX.API.Controllers.Admin
             });
         }
          
-        // POST: api/CR
         [HttpPost]
         public async Task<IActionResult> CreateCR([FromBody] CreateCRDto crDto)
         {
@@ -78,7 +74,6 @@ namespace ChangeX.API.Controllers.Admin
             });
         }
 
-        // PUT: api/CR/{ID}
         [HttpPut("{ID}")]
         public async Task<IActionResult> UpdateCR(Guid ID, [FromBody] EstimateCRDto crDto)
         {
@@ -98,7 +93,6 @@ namespace ChangeX.API.Controllers.Admin
             });
         }
 
-        // DELETE: api/CR/{ID}
         [HttpDelete("{ID}")]
         public async Task<IActionResult> DeleteCR(Guid ID)
         {

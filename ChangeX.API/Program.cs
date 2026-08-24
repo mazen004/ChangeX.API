@@ -34,7 +34,7 @@ namespace ChangeX.API
                         IssuerSigningKey = new SymmetricSecurityKey(
                             Encoding.UTF8.GetBytes(builder.Configuration["AppSettings:Token"]!)),
                         ValidateIssuerSigningKey = true,
-                        RoleClaimType = "Role"
+                        //RoleClaimType = "Role"
                     };
 
                 });

@@ -15,13 +15,13 @@ namespace ChangeX.BLL.Services
         {
             this.dbcontext = dbcontext;
         }
-        public async Task<List<Project>> GetProjectsAsync(Guid ClientId)
+        public async Task<IEnumerable<Project>> GetProjectsAsync(Guid ClientId)
         {
             return await dbcontext.Projects.Where(x=>x.ClientID == ClientId).ToListAsync();
         }
 
 
-        public async Task<List<Project>> GetProjectsAsync(Expression<Func<Project, bool>>? predicate)
+        public async Task<IEnumerable<Project>> GetProjectsAsync(Expression<Func<Project, bool>>? predicate)
         {
             return await dbcontext.Projects.ToListAsync();
         }

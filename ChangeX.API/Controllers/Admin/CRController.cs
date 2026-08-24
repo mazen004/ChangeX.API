@@ -16,7 +16,6 @@ namespace ChangeX.API.Controllers.Admin
 
         // GET: api/CR
         [HttpGet]
-        [Authorize (Roles ="admin")]
         public async Task<IActionResult> GetAllCRs([FromQuery] Guid? projectId, [FromQuery] Guid? ClientID, [FromQuery] Guid? statusId, [FromQuery] string? name)
         {
             Expression<Func<CR, bool>>? predicate = null;
@@ -46,11 +45,11 @@ namespace ChangeX.API.Controllers.Admin
             });
         }
 
-        // GET: api/CR/{id}
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetCRById(Guid id)
+        // GET: api/CR/{ID}
+        [HttpGet("{ID}")]
+        public async Task<IActionResult> GetCRById(Guid ID)
         {
-            var result = await crService.GetByID(id);
+            var result = await crService.GetByID(ID);
             if (!result.Success)
                 return StatusCode(result.StatusCode, new { message = result.Message });
 
@@ -79,11 +78,11 @@ namespace ChangeX.API.Controllers.Admin
             });
         }
 
-        // PUT: api/CR/{id}
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateCR(Guid id, [FromBody] EstimateCRDto crDto)
+        // PUT: api/CR/{ID}
+        [HttpPut("{ID}")]
+        public async Task<IActionResult> UpdateCR(Guid ID, [FromBody] EstimateCRDto crDto)
         {
-            var getResult = await crService.GetByID(id);
+            var getResult = await crService.GetByID(ID);
             if (!getResult.Success)
                 return StatusCode(getResult.StatusCode, new { message = getResult.Message });
 
@@ -99,11 +98,11 @@ namespace ChangeX.API.Controllers.Admin
             });
         }
 
-        // DELETE: api/CR/{id}
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteCR(Guid id)
+        // DELETE: api/CR/{ID}
+        [HttpDelete("{ID}")]
+        public async Task<IActionResult> DeleteCR(Guid ID)
         {
-            var result = await crService.Delete(id);
+            var result = await crService.Delete(ID);
             if (!result.Success)
                 return StatusCode(result.StatusCode, new { message = result.Message });
 
@@ -113,14 +112,14 @@ namespace ChangeX.API.Controllers.Admin
             });
         }
 
-        [HttpPut("change_status/{id}")]
-        public async Task<IActionResult> ChangeStatus(Guid id, Guid CRID)
+        [HttpPut("change_status/{ID}")]
+        public async Task<IActionResult> ChangeStatus(Guid ID, Guid CRID)
         {
             var crResult = await crService.GetByID(CRID);
             if (!crResult.Success)
                 return StatusCode(crResult.StatusCode, new { message = crResult.Message });
 
-            var result = await crService.ChangeStatus(id, crResult.Data!);
+            var result = await crService.ChangeStatus(ID, crResult.Data!);
             if (!result.Success)
                 return StatusCode(result.StatusCode, new { message = result.Message });
 

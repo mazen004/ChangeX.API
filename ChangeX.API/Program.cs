@@ -72,6 +72,7 @@ namespace ChangeX.API
             {
                 cfg.AddProfile<MappingClientProfile>();
                 cfg.AddProfile<MappingUserProfile>();
+                cfg.AddProfile<MappingProjectProfile>();
                 cfg.AddProfile<MappingCRProfile>();
                 cfg.AddProfile<MappingDetailProfile>();
             });

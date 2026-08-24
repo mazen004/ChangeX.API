@@ -22,7 +22,7 @@ namespace ChangeX.BLL.Services
                     ? id
                     : null;
             }
-        }~
+        }
 
         public Guid? ClientId
         {

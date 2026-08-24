@@ -3,87 +3,137 @@ using Microsoft.AspNetCore.Mvc;
 using ChangeX.BLL.DTOs;
 using AutoMapper;
 using ChangeX.DAL.Entities;
+using Microsoft.AspNetCore.Authorization;
 
 
 namespace ChangeX.API.Controllers.Admin
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ClientController : ControllerBase
+    [Authorize]
+    public class ClientController(IClientServices clientSercivies, IMapper mapper, ICurrentUserService currentUserService) : ControllerBase
     {
-        private readonly IClientServices clientSercivies;
-        private readonly IMapper _mapper;
 
-        public ClientController(IClientServices clientSercivies , IMapper mapper)
-        {
-            this.clientSercivies = clientSercivies;
-            _mapper = mapper;
-        }
-
-        [HttpGet]
+        [HttpGet("GetAllClients"), Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetClients()
         {
-            var result = await clientSercivies.GetAll();
-            if (!result.Success)
-                return StatusCode(result.StatusCode, new { message = result.Message });
+            try
+            {
+                var result = await clientSercivies.GetAll();
+                if (!result.Success)
+                    return StatusCode(result.StatusCode, new { message = result.Message });
 
-            var data = _mapper.Map<IEnumerable<ClientResponseDto>>(result.Data);
-            return Ok(new { message = result.Message, data });
+                var data = mapper.Map<IEnumerable<ClientResponseDto>>(result.Data);
+                return Ok(new { message = result.Message, data });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    message = ex.Message,
+                    innerException = ex.InnerException?.Message
+                });
+            }
         }
 
-        [HttpGet("{id:guid}")]
-        public async Task<IActionResult> GetClientById(Guid id)
+        [HttpGet("GetClient/{ID:guid}")]
+        public async Task<IActionResult> GetClientById(Guid ID)
         {
-            var result = await clientSercivies.GetByID(id);
-            if (!result.Success)
-                return StatusCode(result.StatusCode, new { message = result.Message });
+            try
+            {
+                if (ID != currentUserService.ClientId)
+                    return Unauthorized();
+                var result = await clientSercivies.GetByID(ID);
+                if (!result.Success)
+                    return StatusCode(result.StatusCode, new { message = result.Message });
 
-            var data = _mapper.Map<ClientResponseDto>(result.Data);
-            return Ok(new { message = result.Message, data });
+                var data = mapper.Map<ClientResponseDto>(result.Data);
+                return Ok(new { message = result.Message, data });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    message = ex.Message,
+                    innerException = ex.InnerException?.Message
+                });
+            }
         }
 
-        [HttpPost]
+        [HttpPost("AddClient"), Authorize(Roles = "Admin")]
         public async Task<IActionResult> CreateClient([FromForm] ClientDto clientDto)
         {
-            var client = _mapper.Map<Client>(clientDto);
-            var result = await clientSercivies.Create(client);
-            if (!result.Success)
-                return StatusCode(result.StatusCode, new { message = result.Message });
+            try
+            {
+                var client = mapper.Map<Client>(clientDto);
+                var result = await clientSercivies.Create(client);
+                if (!result.Success)
+                    return StatusCode(result.StatusCode, new { message = result.Message });
 
-            var data = _mapper.Map<ClientResponseDto>(result.Data);
-            return StatusCode(
-                StatusCodes.Status201Created,
-                new { message = result.Message, data });
+                var data = mapper.Map<ClientResponseDto>(result.Data);
+                return StatusCode(
+                    StatusCodes.Status201Created,
+                    new { message = result.Message, data });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    message = ex.Message,
+                    innerException = ex.InnerException?.Message
+                });
+            }
         }
 
-        [HttpPut("{id:guid}")]
-        public async Task<IActionResult> UpdateClient(Guid id, [FromBody] ClientDto clientDto)
+        [HttpPut("UpdateClient/{ID:guid}"), Authorize(Roles = "Admin")]
+        public async Task<IActionResult> UpdateClient(Guid ID, [FromBody] ClientDto clientDto)
         {
-            var getResult = await clientSercivies.GetByID(id);
-            if (!getResult.Success)
-                return StatusCode(getResult.StatusCode, new { message = getResult.Message });
+            try
+            {
+                var getResult = await clientSercivies.GetByID(ID);
+                if (!getResult.Success)
+                    return StatusCode(getResult.StatusCode, new { message = getResult.Message });
 
-            _mapper.Map(clientDto, getResult.Data);
-            var result = await clientSercivies.Update(getResult.Data!);
-            if (!result.Success)
-                return StatusCode(result.StatusCode, new { message = result.Message });
+                mapper.Map(clientDto, getResult.Data);
+                var result = await clientSercivies.Update(getResult.Data!);
+                if (!result.Success)
+                    return StatusCode(result.StatusCode, new { message = result.Message });
 
-            var data = _mapper.Map<ClientResponseDto>(result.Data);
-            return Ok(new { message = result.Message, data });
+                var data = mapper.Map<ClientResponseDto>(result.Data);
+                return Ok(new { message = result.Message, data });
+            }
+            catch(Exception ex) {
+                return BadRequest(new
+                {
+                    message = ex.Message,
+                    innerException = ex.InnerException?.Message
+                });
+            }
         }
 
-        [HttpDelete("{id:guid}")]
-        public async Task<IActionResult> DeleteClient(Guid id)
+        [HttpDelete("DeleteClient/{ID:guid}"), Authorize(Roles = "Admin")]
+        public async Task<IActionResult> DeleteClient(Guid ID)
         {
-            var getResult = await clientSercivies.GetByID(id);
-            if (!getResult.Success)
-                return StatusCode(getResult.StatusCode, new { message = getResult.Message });
+            try
+            {
+                var getResult = await clientSercivies.GetByID(ID);
+                if (!getResult.Success)
+                    return StatusCode(getResult.StatusCode, new { message = getResult.Message });
 
-            var result = await clientSercivies.Delete(id);
-            if (!result.Success)
-                return StatusCode(result.StatusCode, new { message = result.Message });
+                var result = await clientSercivies.Delete(ID);
+                if (!result.Success)
+                    return StatusCode(result.StatusCode, new { message = result.Message });
 
-            return Ok(new { message = result.Message });
+                return Ok(new { message = result.Message });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    message = ex.Message,
+                    innerException = ex.InnerException?.Message
+                });
+            }
         }
     }
 }

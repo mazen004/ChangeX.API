@@ -155,8 +155,7 @@ namespace ChangeX.API.Controllers
             }
         }
 
-        [Authorize(Roles = "Admin")]
-        [HttpPost("AddUser")]
+        [HttpPost("AddUser"), Authorize(Roles = "Admin")]
         public async Task<IActionResult> AddUser(AddUserDto userDto)
         {
             try
@@ -193,8 +192,7 @@ namespace ChangeX.API.Controllers
             }
         }
 
-        [Authorize(Roles = "Admin")]
-        [HttpPut("UpdateUser")]
+        [HttpPut("UpdateUser"), Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateUser([FromQuery] Guid ID, [FromBody] UpdateUserDto userDto)
         {
             try
@@ -231,8 +229,7 @@ namespace ChangeX.API.Controllers
             }
         }
 
-        [Authorize(Roles = "Admin")]
-        [HttpDelete("DeleteUser")]
+        [HttpDelete("DeleteUser"), Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteUser([FromQuery] Guid ID)
         {
             try

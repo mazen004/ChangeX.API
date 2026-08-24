@@ -1,25 +1,21 @@
 using ChangeX.BLL.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ChangeX.API.Controllers.Admin
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class StatusController : ControllerBase
+    [Authorize]
+    public class StatusController(IStatusService statusService) : ControllerBase
     {
-        private readonly IStatusService statusService;
 
-        public StatusController(IStatusService statusService)
-        {
-            this.statusService = statusService;
-        }
-
-        [HttpGet("cr/{crId:guid}")]
-        public async Task<IActionResult> GetCurrentStatus(Guid crId)
+        [HttpGet("CR/{CRID:guid}")]
+        public async Task<IActionResult> GetCurrentStatus(Guid CRID)
         {
             try
             {
-                var status = await statusService.GetCurrentStatus(crId);
+                var status = await statusService.GetCurrentStatus(CRID);
                 return Ok(new
                 {
                     message = "Status found",
@@ -32,12 +28,12 @@ namespace ChangeX.API.Controllers.Admin
             }
         }
 
-        [HttpGet("cr/{crId:guid}/available")]
-        public async Task<IActionResult> GetAvailableStatus(Guid crId)
+        [HttpGet("cr/{CRID:guid}/available")]
+        public async Task<IActionResult> GetAvailableStatus(Guid CRID)
         {
             try
             {
-                var availableStatuses = await statusService.GetAvailableStatus(crId);
+                var availableStatuses = await statusService.GetAvailableStatus(CRID);
                 return Ok(new
                 {
                     message = "Available statuses found",

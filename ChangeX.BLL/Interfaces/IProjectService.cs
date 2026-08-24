@@ -6,10 +6,10 @@ namespace ChangeX.BLL.Interfaces
 {
     public interface IProjectService
     {
-        Task<List<Project>> GetProjectsAsync(
+        Task<IEnumerable<Project>> GetProjectsAsync(
             Expression<Func<Project, bool>>? predicate);
 
-        Task<List<Project>> GetProjectsAsync(Guid clientId);
+        Task<IEnumerable<Project>> GetProjectsAsync(Guid clientId);
 
         Task<Project?> GetProjectByIdAsync(Guid id);
 

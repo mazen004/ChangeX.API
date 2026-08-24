@@ -24,7 +24,7 @@ namespace ChangeX.BLL.Services
                 .AsNoTracking()
                 .Include(c => c.DefaultContact)
                 .ToListAsync();
-            return ServiceResponse<IEnumerable<Client>>.Ok(clients, "Get all clients");
+            return ServiceResponse<IEnumerable<Client>>.Ok(clients, "Get All Clients");
         }
         public async Task<ServiceResponse<Client>> GetByID(Guid ID)
         {
@@ -45,16 +45,15 @@ namespace ChangeX.BLL.Services
         }
         public async Task<ServiceResponse<Client>> Update(Client client)
         {
+            if(!await Exist(client.Email))
+                return ServiceResponse<Client>.Fail("Client with this email already exists.", 400);
+
             var existingClient = await dbcontext.Clients
                 .Where(c => c.ID == client.ID)
                 .FirstOrDefaultAsync();
             if (existingClient == null)
                 return ServiceResponse<Client>.Fail("Client not found.", 404);
-            existingClient.Name = client.Name;
-            existingClient.Email = client.Email;
-            existingClient.Description = client.Description;
-            existingClient.Address = client.Address;
-            existingClient.ContactInfo = client.ContactInfo;
+            dbcontext.Clients.Update(existingClient);
             await dbcontext.SaveChangesAsync();
             return ServiceResponse<Client>.Ok(existingClient, "Client updated successfully");
         }
@@ -63,11 +62,19 @@ namespace ChangeX.BLL.Services
             var existingClient = await dbcontext.Clients
                 .Where(c => c.ID == ID)
                 .FirstOrDefaultAsync();
+
             if (existingClient == null)
                 return ServiceResponse<bool>.Fail("Client not found.", 404);
+
             dbcontext.Clients.Remove(existingClient);
             await dbcontext.SaveChangesAsync();
+
             return ServiceResponse<bool>.Ok(true, "Client deleted successfully");
+        }
+        public async Task<bool> Exist(string Email)
+        {
+            return await dbcontext.Clients
+                .AnyAsync(c => c.Email == Email);
         }
     }
 }

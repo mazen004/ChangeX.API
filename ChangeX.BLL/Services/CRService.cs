@@ -92,34 +92,56 @@ namespace ChangeX.BLL.Services
             return ServiceResponse<bool>.Ok(true, "CR deleted successfully");
         }
 
-        public async Task<ServiceResponse<CR>> ChangeStatus( Guid TargetStatusID,CR currentCR)
+        public async Task<ServiceResponse<CR>> ChangeStatus(
+            Guid TargetStatusID,
+            CR currentCR)
         {
-            var currentStatus = currentCR.CurrentStatus;
-
-            var availableStatus = currentStatus.AvailableStatusIDs.Split(",").Select(Guid.Parse).ToList();
-
-            if ( availableStatus==null) {
-                return ServiceResponse<CR>.Fail("Status not found.");
-            }
-            if ( currentCR==null) {
-                return ServiceResponse<CR>.Fail("CR not found.");
-            }
-
-            foreach (var status in availableStatus)
+            if (currentCR == null)
             {
-                if (status == TargetStatusID)
-                {
-                 currentCR.CurrentStatusID=TargetStatusID; 
-                 currentCR.CurrentStatus = await dbcontext.CRStatues.FindAsync(TargetStatusID);
-                }
+                return ServiceResponse<CR>.Fail("CR not found.", 404);
             }
-            if(currentCR.CurrentStatusID != TargetStatusID)
+
+            var trackedCR = await dbcontext.CRs
+                .Include(cr => cr.CurrentStatus)
+                .FirstOrDefaultAsync(cr => cr.ID == currentCR.ID);
+
+            if (trackedCR == null)
             {
-                return ServiceResponse<CR>.Fail("Target status not accessible");
+                return ServiceResponse<CR>.Fail("CR not found.", 404);
             }
+
+            if (trackedCR.CurrentStatus == null ||
+                string.IsNullOrWhiteSpace(trackedCR.CurrentStatus.AvailableStatusIDs))
+            {
+                return ServiceResponse<CR>.Fail("Target status not accessible.");
+            }
+
+            var availableStatusIDs = trackedCR.CurrentStatus.AvailableStatusIDs
+                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Select(value => Guid.TryParse(value, out var id) ? id : Guid.Empty)
+                .Where(id => id != Guid.Empty)
+                .ToHashSet();
+
+            if (!availableStatusIDs.Contains(TargetStatusID))
+            {
+                return ServiceResponse<CR>.Fail("Target status not accessible.");
+            }
+
+            var targetStatus = await dbcontext.CRStatues.FindAsync(TargetStatusID);
+
+            if (targetStatus == null)
+            {
+                return ServiceResponse<CR>.Fail("Target status not found.", 404);
+            }
+
+            trackedCR.CurrentStatusID = TargetStatusID;
+            trackedCR.CurrentStatus = targetStatus;
+
             await dbcontext.SaveChangesAsync();
-            return ServiceResponse<CR>.Ok(currentCR, "CR status changed successfully");
 
+            return ServiceResponse<CR>.Ok(
+                trackedCR,
+                "CR status changed successfully");
         }
     }
 }

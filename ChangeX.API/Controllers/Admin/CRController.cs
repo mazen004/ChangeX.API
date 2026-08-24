@@ -4,42 +4,39 @@ using ChangeX.BLL.Interfaces;
 using ChangeX.DAL.Entities;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq.Expressions;
-
+using Microsoft.AspNetCore.Authorization;
 
 namespace ChangeX.API.Controllers.Admin
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class CRController : ControllerBase
+    [Authorize]
+    public class CRController(ICurrentUserService currentUser, ICRServices crService, IMapper mapper) : ControllerBase 
     {
-        private readonly ICRServices _crService;
-        private readonly IMapper _mapper;
-
-        public CRController(ICRServices crService, IMapper mapper)
-        {
-            _crService = crService;
-            _mapper = mapper;
-        }
 
         // GET: api/CR
         [HttpGet]
-        public async Task<IActionResult> GetAllCRs([FromQuery] Guid? projectId, [FromQuery] Guid? statusId, [FromQuery] string? name)
+        public async Task<IActionResult> GetAllCRs([FromQuery] Guid? projectId, [FromQuery] Guid? ClientID, [FromQuery] Guid? statusId, [FromQuery] string? name)
         {
             Expression<Func<CR, bool>>? predicate = null;
 
-            if (projectId.HasValue || statusId.HasValue || !string.IsNullOrWhiteSpace(name))
+            if (currentUser.Role != "Admin" && currentUser.ClientId != ClientID)
+                return Unauthorized();
+            
+            if (projectId.HasValue || statusId.HasValue || !string.IsNullOrWhiteSpace(name) || ClientID.HasValue)
             {
                 predicate = cr =>
                     (!projectId.HasValue || cr.ProjectID == projectId.Value) &&
                     (!statusId.HasValue || cr.CurrentStatusID == statusId.Value) &&
-                    (string.IsNullOrWhiteSpace(name) || cr.Name.Contains(name));
+                    (string.IsNullOrWhiteSpace(name) || cr.Name.Contains(name) &&
+                    (!ClientID.HasValue || cr.Project.ClientID == ClientID));
             }
 
-            var result = await _crService.GetAll(predicate);
+            var result = await crService.GetAll(predicate);
             if (!result.Success)
                 return StatusCode(result.StatusCode, new { message = result.Message });
 
-            var data = _mapper.Map<IEnumerable<CRResponseDto>>(result.Data);
+            var data = mapper.Map<IEnumerable<CRResponseDto>>(result.Data);
 
             return Ok(new
             {
@@ -52,11 +49,11 @@ namespace ChangeX.API.Controllers.Admin
         [HttpGet("{id}")]
         public async Task<IActionResult> GetCRById(Guid id)
         {
-            var result = await _crService.GetByID(id);
+            var result = await crService.GetByID(id);
             if (!result.Success)
                 return StatusCode(result.StatusCode, new { message = result.Message });
 
-            var data = _mapper.Map<CRResponseDto>(result.Data);
+            var data = mapper.Map<CRResponseDto>(result.Data);
 
             return Ok(new
             {
@@ -69,8 +66,8 @@ namespace ChangeX.API.Controllers.Admin
         [HttpPost]
         public async Task<IActionResult> CreateCR([FromBody] CreateCRDto crDto)
         {
-            var cr = _mapper.Map<CR>(crDto);
-            var result = await _crService.Create(cr);
+            var cr = mapper.Map<CR>(crDto);
+            var result = await crService.Create(cr);
             if (!result.Success)
                 return StatusCode(result.StatusCode, new { message = result.Message });
 
@@ -85,12 +82,12 @@ namespace ChangeX.API.Controllers.Admin
         //[HttpPut("{id}")]
         //public async Task<IActionResult> UpdateCR(Guid id, [FromBody] CreateCRDto crDto)
         //{
-        //    var getResult = await _crService.GetByID(id);
+        //    var getResult = await crService.GetByID(id);
         //    if (!getResult.Success)
         //        return StatusCode(getResult.StatusCode, new { message = getResult.Message });
 
-        //    _mapper.Map(crDto, getResult.Data);
-        //    var result = await _crService.Update(getResult.Data!);
+        //    mapper.Map(crDto, getResult.Data);
+        //    var result = await crService.Update(getResult.Data!);
         //    if (!result.Success)
         //        return StatusCode(result.StatusCode, new { message = result.Message });
 
@@ -105,7 +102,7 @@ namespace ChangeX.API.Controllers.Admin
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteCR(Guid id)
         {
-            var result = await _crService.Delete(id);
+            var result = await crService.Delete(id);
             if (!result.Success)
                 return StatusCode(result.StatusCode, new { message = result.Message });
 
@@ -118,11 +115,11 @@ namespace ChangeX.API.Controllers.Admin
         [HttpPut("change_status/{id}")]
         public async Task<IActionResult> ChangeStatus(Guid id, Guid CRID)
         {
-            var crResult = await _crService.GetByID(CRID);
+            var crResult = await crService.GetByID(CRID);
             if (!crResult.Success)
                 return StatusCode(crResult.StatusCode, new { message = crResult.Message });
 
-            var result = await _crService.ChangeStatus(id, crResult.Data!);
+            var result = await crService.ChangeStatus(id, crResult.Data!);
             if (!result.Success)
                 return StatusCode(result.StatusCode, new { message = result.Message });
 

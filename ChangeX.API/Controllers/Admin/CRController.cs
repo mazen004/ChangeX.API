@@ -16,6 +16,7 @@ namespace ChangeX.API.Controllers.Admin
 
         // GET: api/CR
         [HttpGet]
+        [Authorize (Roles ="admin")]
         public async Task<IActionResult> GetAllCRs([FromQuery] Guid? projectId, [FromQuery] Guid? ClientID, [FromQuery] Guid? statusId, [FromQuery] string? name)
         {
             Expression<Func<CR, bool>>? predicate = null;
@@ -28,8 +29,8 @@ namespace ChangeX.API.Controllers.Admin
                 predicate = cr =>
                     (!projectId.HasValue || cr.ProjectID == projectId.Value) &&
                     (!statusId.HasValue || cr.CurrentStatusID == statusId.Value) &&
-                    (string.IsNullOrWhiteSpace(name) || cr.Name.Contains(name) &&
-                    (!ClientID.HasValue || cr.Project.ClientID == ClientID));
+                    (string.IsNullOrWhiteSpace(name) || cr.Name.Contains(name)) &&
+                    (!ClientID.HasValue || cr.Project.ClientID == ClientID);
             }
 
             var result = await crService.GetAll(predicate);
@@ -79,24 +80,24 @@ namespace ChangeX.API.Controllers.Admin
         }
 
         // PUT: api/CR/{id}
-        //[HttpPut("{id}")]
-        //public async Task<IActionResult> UpdateCR(Guid id, [FromBody] CreateCRDto crDto)
-        //{
-        //    var getResult = await crService.GetByID(id);
-        //    if (!getResult.Success)
-        //        return StatusCode(getResult.StatusCode, new { message = getResult.Message });
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateCR(Guid id, [FromBody] EstimateCRDto crDto)
+        {
+            var getResult = await crService.GetByID(id);
+            if (!getResult.Success)
+                return StatusCode(getResult.StatusCode, new { message = getResult.Message });
 
-        //    mapper.Map(crDto, getResult.Data);
-        //    var result = await crService.Update(getResult.Data!);
-        //    if (!result.Success)
-        //        return StatusCode(result.StatusCode, new { message = result.Message });
+            mapper.Map(crDto, getResult.Data);
+            var result = await crService.Update(getResult.Data!);
+            if (!result.Success)
+                return StatusCode(result.StatusCode, new { message = result.Message });
 
-        //    return Ok(new
-        //    {
-        //        message = result.Message,
-        //        data = result.Data
-        //    });
-        //}
+            return Ok(new
+            {
+                message = result.Message,
+                data = result.Data
+            });
+        }
 
         // DELETE: api/CR/{id}
         [HttpDelete("{id}")]

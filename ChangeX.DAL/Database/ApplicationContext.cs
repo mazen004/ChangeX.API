@@ -102,7 +102,7 @@ namespace ChangeX.DAL.Database
                 {
                     ID = Guid.Parse("4B9E7C2A-6D3F-4A8E-9C2B-1E7A4D8C6F39"),
                     CurrentStatus = "Rework Required",
-                    AvailableStatusIDs = "1C8E4B7A-3D9F-4E2C-B6A8-5F3D9E1C7A42",
+                    AvailableStatusIDs = "C1F7A4E9-8B2D-4E6C-A3F1-7C9E2A5D8B64",
                     AccessedBy = "Admin"
                 },
                 new CRStatus

@@ -9,13 +9,13 @@ namespace ChangeX.BLL.Interfaces
         Task<IEnumerable<Project>> GetProjectsAsync(
             Expression<Func<Project, bool>>? predicate);
 
-        Task<IEnumerable<Project>> GetProjectsAsync(Guid clientId);
+        //Task<IEnumerable<Project>> GetProjectsAsync(Guid clientId);
 
         Task<Project?> GetProjectByIdAsync(Guid id);
 
-        Task<Project> CreateProjectAsync(ProjectDto dto);
+        Task<Project> CreateProjectAsync(Project project);
 
-        Task<Project?> UpdateProjectAsync(Guid id, ProjectDto dto);
+        Task<Project?> UpdateProjectAsync(Guid id, Project project);
 
         Task<bool> DeleteProjectAsync(Guid id);
     }

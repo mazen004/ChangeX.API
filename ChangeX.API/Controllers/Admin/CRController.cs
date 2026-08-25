@@ -13,20 +13,18 @@ namespace ChangeX.API.Controllers.Admin
     [Authorize]
     public class CRController(ICurrentUserService currentUser, ICRServices crService, IMapper mapper) : ControllerBase 
     {
-
-        // GET: api/CR
-        [HttpGet]
-        public async Task<IActionResult> GetAllCRs([FromQuery] Guid? projectId, [FromQuery] Guid? ClientID, [FromQuery] Guid? statusId, [FromQuery] string? name)
+        [HttpGet("GetAllCRs")]
+        public async Task<IActionResult> GetAllCRs([FromQuery] Guid? projectID, [FromQuery] Guid? ClientID, [FromQuery] Guid? statusId, [FromQuery] string? name)
         {
             Expression<Func<CR, bool>>? predicate = null;
 
             if (currentUser.Role != "Admin" && currentUser.ClientId != ClientID)
-                return Unauthorized();
+                return Forbid();
             
-            if (projectId.HasValue || statusId.HasValue || !string.IsNullOrWhiteSpace(name) || ClientID.HasValue)
+            if (projectID.HasValue || statusId.HasValue || !string.IsNullOrWhiteSpace(name) || ClientID.HasValue)
             {
                 predicate = cr =>
-                    (!projectId.HasValue || cr.ProjectID == projectId.Value) &&
+                    (!projectID.HasValue || cr.ProjectID == projectID.Value) &&
                     (!statusId.HasValue || cr.CurrentStatusID == statusId.Value) &&
                     (string.IsNullOrWhiteSpace(name) || cr.Name.Contains(name)) &&
                     (!ClientID.HasValue || cr.Project.ClientID == ClientID);
@@ -45,8 +43,7 @@ namespace ChangeX.API.Controllers.Admin
             });
         }
 
-        // GET: api/CR/{ID}
-        [HttpGet("{ID}")]
+        [HttpGet("GetCR/{ID:Guid}")]
         public async Task<IActionResult> GetCRById(Guid ID)
         {
             var result = await crService.GetByID(ID);
@@ -61,9 +58,8 @@ namespace ChangeX.API.Controllers.Admin
                 data
             });
         }
-
-        // POST: api/CR
-        [HttpPost]
+         
+        [HttpPost("AddCR")]
         public async Task<IActionResult> CreateCR([FromBody] CreateCRDto crDto)
         {
             var cr = mapper.Map<CR>(crDto);
@@ -78,9 +74,8 @@ namespace ChangeX.API.Controllers.Admin
             });
         }
 
-        // PUT: api/CR/{ID}
-        [HttpPut("{ID}")]
-        public async Task<IActionResult> UpdateCR(Guid ID, [FromBody] EstimateCRDto crDto)
+        [HttpPut("UpdateCR"), Authorize(Roles = "Admin")]
+        public async Task<IActionResult> UpdateCR([FromQuery] Guid ID, [FromBody] EstimateCRDto crDto)
         {
             var getResult = await crService.GetByID(ID);
             if (!getResult.Success)
@@ -98,9 +93,8 @@ namespace ChangeX.API.Controllers.Admin
             });
         }
 
-        // DELETE: api/CR/{ID}
-        [HttpDelete("{ID}")]
-        public async Task<IActionResult> DeleteCR(Guid ID)
+        [HttpDelete("DeleteCR"), Authorize(Roles = "Admin")]
+        public async Task<IActionResult> DeleteCR([FromQuery] Guid ID)
         {
             var result = await crService.Delete(ID);
             if (!result.Success)
@@ -112,8 +106,8 @@ namespace ChangeX.API.Controllers.Admin
             });
         }
 
-        [HttpPut("change_status/{ID}")]
-        public async Task<IActionResult> ChangeStatus(Guid ID, Guid CRID)
+        [HttpPut("ChangeStatus")]
+        public async Task<IActionResult> ChangeStatus([FromQuery] Guid ID, [FromQuery] Guid CRID)
         {
             var crResult = await crService.GetByID(CRID);
             if (!crResult.Success)

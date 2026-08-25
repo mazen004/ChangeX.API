@@ -8,7 +8,8 @@ namespace ChangeX.BLL.Mapping
     {
         public MappingProjectProfile()
         {
-            CreateMap<ProjectDto, Project>();
+            CreateMap<Project, ProjectDto>();
+            CreateMap<CreateProjectDto, Project>();
         }
     }
 }

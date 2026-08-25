@@ -11,30 +11,33 @@ namespace ChangeX.API.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-    public class ProjectController(
-        IMapper mapper,
-        IProjectService projectServices,
-        ICurrentUserService currentUser) : ControllerBase
+    public class ProjectController(IMapper mapper, IProjectService projectServices,ICurrentUserService currentUser) : ControllerBase
     {
        
-
         [HttpGet("GetAllProjects")]
-        public async Task<IActionResult> GetAllProjects()
+        public async Task<IActionResult> GetAllProjects([FromQuery] Guid? ClientID)
         {
             try
             {
                 Expression<Func<Project, bool>>? predicate = null;
 
-                if (currentUser.Role != "Admin")
+                if (currentUser.Role != "Admin" && ClientID != currentUser.ClientId)
                 {
-                    predicate = p =>
-                        p.ClientID == currentUser.ClientId;
+                    return Forbid();
                 }
 
-                var projects =
-                    await projectServices.GetProjectsAsync(predicate);
+                if (ClientID.HasValue)
+                {
+                    predicate = p => p.ClientID == ClientID;
+                }
+                else if (currentUser.Role != "Admin" && !ClientID.HasValue)
+                {
+                    predicate = p => p.ClientID == currentUser.ClientId;
+                }
 
-                if (projects == null )
+                var projects = await projectServices.GetProjectsAsync(predicate);
+
+                if (projects == null)
                 {
                     return NotFound(new
                     {
@@ -58,9 +61,6 @@ namespace ChangeX.API.Controllers
             }
         }
 
-
-        
-
         [HttpGet("GetProject/{ID:Guid}")]
         public async Task<IActionResult> GetProject(Guid ID)
         {
@@ -77,13 +77,9 @@ namespace ChangeX.API.Controllers
                     });
                 }
 
-                if (currentUser.Role != "Admin" &&
-                    project.ClientID != currentUser.ClientId)
+                if (currentUser.Role != "Admin" && project.ClientID != currentUser.ClientId)
                 {
-                    return Unauthorized(new
-                    {
-                        message = "You are not authorized to access this project."
-                    });
+                    return Forbid();
                 }
 
                 var data = mapper.Map<ProjectDto>(project);
@@ -100,11 +96,8 @@ namespace ChangeX.API.Controllers
             }
         }
 
-
-        [Authorize(Roles = "Admin,UserAdmin")]
-        [HttpPost("AddProject")]
-        public async Task<IActionResult> AddProject(
-            [FromBody] ProjectDto projectDto)
+        [HttpPost("AddProject"), Authorize(Roles = "Admin")]
+        public async Task<IActionResult> AddProject([FromBody] CreateProjectDto projectDto)
         {
             try
             {
@@ -119,14 +112,10 @@ namespace ChangeX.API.Controllers
                 if (currentUser.Role == "UserAdmin" &&
                     projectDto.ClientID != currentUser.ClientId)
                 {
-                    return Unauthorized(new
-                    {
-                        message = "You cannot create a project for another client."
-                    });
+                    return Forbid();
                 }
 
-                var createdProject =
-                    await projectServices.CreateProjectAsync(projectDto);
+                var createdProject = await projectServices.CreateProjectAsync(mapper.Map<Project>(projectDto));
 
                 if (createdProject == null)
                 {
@@ -155,12 +144,8 @@ namespace ChangeX.API.Controllers
             }
         }
 
-
-        [Authorize(Roles = "Admin,UserAdmin")]
-        [HttpPut("UpdateProject/{ID:Guid}")]
-        public async Task<IActionResult> UpdateProject(
-            Guid ID,
-            [FromBody] ProjectDto projectDto)
+        [HttpPut("UpdateProject"), Authorize(Roles = "Admin")]
+        public async Task<IActionResult> UpdateProject([FromQuery] Guid ID, [FromBody] CreateProjectDto projectDto)
         {
             try
             {
@@ -187,26 +172,20 @@ namespace ChangeX.API.Controllers
                 if (currentUser.Role == "UserAdmin" &&
                     existingProject.ClientID != currentUser.ClientId)
                 {
-                    return Unauthorized(new
-                    {
-                        message = "You cannot update this project."
-                    });
+                    return Forbid();
                 }
 
                
                 if (currentUser.Role == "UserAdmin" &&
                     projectDto.ClientID != currentUser.ClientId)
                 {
-                    return Unauthorized(new
-                    {
-                        message = "You cannot move the project to another client."
-                    });
+                    return Forbid();
                 }
 
                 var updatedProject =
                     await projectServices.UpdateProjectAsync(
                         ID,
-                        projectDto);
+                        mapper.Map<Project>(projectDto));
 
                 if (updatedProject == null)
                 {
@@ -235,10 +214,8 @@ namespace ChangeX.API.Controllers
             }
         }
 
-
-        [Authorize(Roles = "Admin,UserAdmin")]
-        [HttpDelete("DeleteProject/{ID:Guid}")]
-        public async Task<IActionResult> DeleteProject(Guid ID)
+        [HttpDelete("DeleteProject"), Authorize(Roles = "Admin")]
+        public async Task<IActionResult> DeleteProject([FromQuery] Guid ID)
         {
             try
             {
@@ -257,10 +234,7 @@ namespace ChangeX.API.Controllers
                 if (currentUser.Role == "UserAdmin" &&
                     project.ClientID != currentUser.ClientId)
                 {
-                    return Unauthorized(new
-                    {
-                        message = "You cannot delete this project."
-                    });
+                    return Forbid();
                 }
 
                 var deleted =

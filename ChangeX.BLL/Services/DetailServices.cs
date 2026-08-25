@@ -7,15 +7,8 @@ using System.Linq.Expressions;
 
 namespace ChangeX.BLL.Services
 {
-    public class DetailServices : IDetailServices
+    public class DetailServices(ApplicationContext dbcontext) : IDetailServices
     {
-        private readonly ApplicationContext dbcontext;
-
-        public DetailServices(ApplicationContext dbcontext)
-        {
-            this.dbcontext = dbcontext;
-        }
-
         public async Task<ServiceResponse<IEnumerable<Detail>>> GetAll(
             Expression<Func<Detail, bool>>? predicate)
         {

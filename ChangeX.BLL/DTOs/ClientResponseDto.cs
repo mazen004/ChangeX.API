@@ -12,6 +12,6 @@ namespace ChangeX.BLL.DTOs
         public string? Address { get; set; }
         public string ContactInfo { get; set; } = string.Empty;
         public Guid? DefaultContactID { get; set; }
-        public User? DefaultContact { get; set; }
+        public string? DefaultContactName { get; set; }
     }
 }

@@ -7,23 +7,22 @@ using System.Linq.Expressions;
 
 namespace ChangeX.BLL.Services
 {
-    public class ProjectService : IProjectService
+    public class ProjectService(ApplicationContext dbcontext) : IProjectService
     {
-        private readonly ApplicationContext dbcontext;
-
-        public ProjectService(ApplicationContext dbcontext)
-        {
-            this.dbcontext = dbcontext;
-        }
-        public async Task<IEnumerable<Project>> GetProjectsAsync(Guid ClientId)
-        {
-            return await dbcontext.Projects.Where(x=>x.ClientID == ClientId).ToListAsync();
-        }
+        //public async Task<IEnumerable<Project>> GetProjectsAsync(Guid ClientId)
+        //{
+        //    return await dbcontext.Projects.Where(x=>x.ClientID == ClientId).ToListAsync();
+        //}
 
 
         public async Task<IEnumerable<Project>> GetProjectsAsync(Expression<Func<Project, bool>>? predicate)
         {
-            return await dbcontext.Projects.ToListAsync();
+            var query = dbcontext.Projects.AsQueryable();
+            if (predicate != null)
+            {
+                query = query.Where(predicate);
+            }
+            return await query.ToListAsync();
         }
 
         public async Task<Project?> GetProjectByIdAsync(Guid id)
@@ -31,42 +30,42 @@ namespace ChangeX.BLL.Services
             return await dbcontext.Projects.FindAsync(id);
         }
 
-        public async Task<Project> CreateProjectAsync(ProjectDto dto)
+        public async Task<Project> CreateProjectAsync(Project project)
         {
-            var project = new Project()
+            var createProject = new Project()
             {
                 ID = Guid.NewGuid(),
-                Name = dto.Name,
-                Description = dto.Description,
-                Scope = dto.Scope,
-                ClientID = dto.ClientID,
-                State = dto.State
+                Name = project.Name,
+                Description = project.Description,
+                Scope = project.Scope,
+                ClientID = project.ClientID,
+                State = project.State
             };
 
-            dbcontext.Projects.Add(project);
+            dbcontext.Projects.Add(createProject);
             await dbcontext.SaveChangesAsync();
 
-            return project;
+            return createProject;
         }
 
-        public async Task<Project?> UpdateProjectAsync(Guid id, ProjectDto dto)
+        public async Task<Project?> UpdateProjectAsync(Guid id, Project project)
         {
-            var project = await dbcontext.Projects.FindAsync(id);
+            var UpdateProject = await dbcontext.Projects.FindAsync(id);
 
-            if (project == null)
+            if (UpdateProject == null)
             {
                 return null;
             }
 
-            project.Name = dto.Name;
-            project.Description = dto.Description;
-            project.Scope = dto.Scope;
-            project.ClientID = dto.ClientID;
-            project.State = dto.State;
+            UpdateProject.Name = project.Name;
+            UpdateProject.Description = project.Description;
+            UpdateProject.Scope = project.Scope;
+            UpdateProject.ClientID = project.ClientID;
+            UpdateProject.State = project.State;
 
             await dbcontext.SaveChangesAsync();
 
-            return project;
+            return UpdateProject;
         }
 
         public async Task<bool> DeleteProjectAsync(Guid id)

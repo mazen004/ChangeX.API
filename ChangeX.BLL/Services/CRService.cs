@@ -8,15 +8,8 @@ using System.Linq.Expressions;
 
 namespace ChangeX.BLL.Services
 {
-    public class CRService : ICRServices
+    public class CRService(ApplicationContext dbcontext) : ICRServices
     {
-        private readonly ApplicationContext dbcontext;
-
-        public CRService(ApplicationContext dbcontext)
-        {
-            this.dbcontext = dbcontext;
-        }
-
         public async Task<ServiceResponse<IEnumerable<CR>>> GetAll(Expression<Func<CR, bool>>? predicate)
         {
             IQueryable<CR> query = dbcontext.CRs
@@ -92,9 +85,7 @@ namespace ChangeX.BLL.Services
             return ServiceResponse<bool>.Ok(true, "CR deleted successfully");
         }
 
-        public async Task<ServiceResponse<CR>> ChangeStatus(
-            Guid TargetStatusID,
-            CR currentCR)
+        public async Task<ServiceResponse<CR>> ChangeStatus(Guid TargetStatusID, CR currentCR)
         {
             if (currentCR == null)
             {
@@ -138,7 +129,6 @@ namespace ChangeX.BLL.Services
             trackedCR.CurrentStatus = targetStatus;
 
             await dbcontext.SaveChangesAsync();
-
             return ServiceResponse<CR>.Ok(
                 trackedCR,
                 "CR status changed successfully");

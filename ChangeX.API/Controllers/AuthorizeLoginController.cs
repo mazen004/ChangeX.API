@@ -6,13 +6,11 @@ using ChangeX.BLL.Interfaces;
 
 namespace ChangeX.API.Controllers
 {
-    [Route("api/Auth/Login")]
+    [Route("api/Auth")]
     [ApiController]
-    public class AuthorizeLoginController(
-        IMapper mapper,
-        IAuthService authService) : Controller
+    public class AuthorizeLoginController(IMapper mapper, IAuthService authService) : Controller
     {
-        [HttpPost]
+        [HttpPost("Login")]
         public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
         {
             try

@@ -18,7 +18,7 @@ namespace ChangeX.DAL.Database
         public DbSet<User> Users => Set<User>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
+        {/*
             base.OnModelCreating(modelBuilder);
              modelBuilder.Entity<CRStatus>().HasData(
                 new CRStatus
@@ -67,7 +67,7 @@ namespace ChangeX.DAL.Database
                 {
                     ID = Guid.Parse("1C8E4B7A-3D9F-4E2C-B6A8-5F3D9E1C7A42"),
                     CurrentStatus = "Analysis",
-                    AvailableStatusIDs = "6A4D2F9E-8C3B-4A7D-9E1F-4B8A6D2C5F93,A5E9C3B7-2D4F-4A8E-9C1B-6F3D7E2A9B58",
+                    AvailableStatusIDs = "6A4D2F9E-8C3B-4A7D-9E1F-4B8A6D2C5F93",
                     AccessedBy = "Admin"
                 },
                 new CRStatus
@@ -102,7 +102,7 @@ namespace ChangeX.DAL.Database
                 {
                     ID = Guid.Parse("4B9E7C2A-6D3F-4A8E-9C2B-1E7A4D8C6F39"),
                     CurrentStatus = "Rework Required",
-                    AvailableStatusIDs = "1C8E4B7A-3D9F-4E2C-B6A8-5F3D9E1C7A42",
+                    AvailableStatusIDs = "C1F7A4E9-8B2D-4E6C-A3F1-7C9E2A5D8B64",
                     AccessedBy = "Admin"
                 },
                 new CRStatus
@@ -137,10 +137,10 @@ namespace ChangeX.DAL.Database
                 {
                     ID = Guid.Parse("C1F7A4E9-8B2D-4E6C-A3F1-7C9E2A5D8B64"),
                     CurrentStatus = "Pending Vendor Rework Feedback",
-                    AvailableStatusIDs = "1c8e4b7a-3d9f-4e2c-b6a8-5f3d9e1c7a42,8d4f2c6e-3a9b-4e7d-9c1f-5a2d9b6c3e47",
+                    AvailableStatusIDs = "1C8E4B7A-3D9F-4E2C-B6A8-5F3D9E1C7A42,8D4F2C6E-3A9B-4E7D-9C1F-5A2D9B6C3E47",
                     AccessedBy = "Admin"
                 }
             );
-        }
+        */}
     }
 }

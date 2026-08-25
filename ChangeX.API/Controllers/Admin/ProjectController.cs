@@ -21,7 +21,7 @@ namespace ChangeX.API.Controllers
             {
                 Expression<Func<Project, bool>>? predicate = null;
 
-                if (currentUser.Role != "Admin" && ClientID == currentUser.ClientId)
+                if (currentUser.Role != "Admin" && ClientID != currentUser.ClientId)
                 {
                     return Forbid();
                 }

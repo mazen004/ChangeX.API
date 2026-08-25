@@ -95,7 +95,7 @@ namespace ChangeX.DAL.Database
                 {
                     ID = Guid.Parse("8D4F2C6E-3A9B-4E7D-9C1F-5A2D9B6C3E47"),
                     CurrentStatus = "Pending Customer Approval",
-                    AvailableStatusIDs = "B7E3A9C4-2F8D-4B6E-9A1C-6D4F2E8A7C53,8A3E6C1F-4B9D-4E2A-9F7C-2D5B8E4A1C96,4B9E7C2A-6D3F-4A8E-9C2B-1E7A4D8C6F39",
+                    AvailableStatusIDs = "B7E3A9C4-2F8D-4B6E-9A1C-6D4F2E8A7C53,4B9E7C2A-6D3F-4A8E-9C2B-1E7A4D8C6F39",
                     AccessedBy = "Client"
                 },
                 new CRStatus
@@ -123,7 +123,7 @@ namespace ChangeX.DAL.Database
                 {
                     ID = Guid.Parse("5C2E8A4D-9F7B-4E1C-A3D6-8B4F2C9E7A15"),
                     CurrentStatus = "Delivered",
-                    AvailableStatusIDs = "C1F7A4E9-8B2D-4E6C-A3F1-7C9E2A5D8B64",
+                    AvailableStatusIDs = null,
                     AccessedBy = "Admin"
                 },
                 new CRStatus
@@ -136,8 +136,8 @@ namespace ChangeX.DAL.Database
                 new CRStatus
                 {
                     ID = Guid.Parse("C1F7A4E9-8B2D-4E6C-A3F1-7C9E2A5D8B64"),
-                    CurrentStatus = "Completed",
-                    AvailableStatusIDs = null,
+                    CurrentStatus = "Pending Vendor Rework Feedback",
+                    AvailableStatusIDs = "1c8e4b7a-3d9f-4e2c-b6a8-5f3d9e1c7a42,8d4f2c6e-3a9b-4e7d-9c1f-5a2d9b6c3e47",
                     AccessedBy = "Admin"
                 }
             );

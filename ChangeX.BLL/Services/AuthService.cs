@@ -22,9 +22,9 @@ namespace ChangeX.BLL.Services
                         .FirstOrDefaultAsync();
 
             if (user is null)
-                return ServiceResponse<string> .Fail(" Login Failes: Email is incorrect.", 404 );
+                return ServiceResponse<string> .Fail(" Login Failes: Email or Password is incorrect.", 404 );
             if(new PasswordHasher<User>().VerifyHashedPassword(user, user.Password, User.Password) == PasswordVerificationResult.Failed)
-                return ServiceResponse<string> .Fail(" Login Failes: Password is incorrect.", 404 );
+                return ServiceResponse<string> .Fail(" Login Failes: Email or Password is incorrect.", 404 );
 
             var token = await CreateToken(user);
             return ServiceResponse<string>.Ok(token, "Login successful. Role: " + await LoginRole(user) );

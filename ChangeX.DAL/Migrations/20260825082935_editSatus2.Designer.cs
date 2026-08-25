@@ -4,6 +4,7 @@ using ChangeX.DAL.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ChangeX.DAL.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    partial class ApplicationContextModelSnapshot : ModelSnapshot
+    [Migration("20260825082935_editSatus2")]
+    partial class editSatus2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -68,7 +71,7 @@ namespace ChangeX.DAL.Migrations
 
                     b.HasIndex("ProjectID");
 
-                    b.ToTable("CRs", (string)null);
+                    b.ToTable("CRs");
                 });
 
             modelBuilder.Entity("ChangeX.DAL.Entities.CRStatus", b =>
@@ -90,7 +93,7 @@ namespace ChangeX.DAL.Migrations
 
                     b.HasKey("ID");
 
-                    b.ToTable("CRStatues", (string)null);
+                    b.ToTable("CRStatues");
 
                     b.HasData(
                         new
@@ -167,7 +170,7 @@ namespace ChangeX.DAL.Migrations
                         {
                             ID = new Guid("8d4f2c6e-3a9b-4e7d-9c1f-5a2d9b6c3e47"),
                             AccessedBy = "Client",
-                            AvailableStatusIDs = "B7E3A9C4-2F8D-4B6E-9A1C-6D4F2E8A7C53,8A3E6C1F-4B9D-4E2A-9F7C-2D5B8E4A1C96,4B9E7C2A-6D3F-4A8E-9C2B-1E7A4D8C6F39",
+                            AvailableStatusIDs = "B7E3A9C4-2F8D-4B6E-9A1C-6D4F2E8A7C53,4B9E7C2A-6D3F-4A8E-9C2B-1E7A4D8C6F39",
                             CurrentStatus = "Pending Customer Approval"
                         },
                         new
@@ -195,7 +198,6 @@ namespace ChangeX.DAL.Migrations
                         {
                             ID = new Guid("5c2e8a4d-9f7b-4e1c-a3d6-8b4f2c9e7a15"),
                             AccessedBy = "Admin",
-                            AvailableStatusIDs = "C1F7A4E9-8B2D-4E6C-A3F1-7C9E2A5D8B64",
                             CurrentStatus = "Delivered"
                         },
                         new
@@ -208,7 +210,8 @@ namespace ChangeX.DAL.Migrations
                         {
                             ID = new Guid("c1f7a4e9-8b2d-4e6c-a3f1-7c9e2a5d8b64"),
                             AccessedBy = "Admin",
-                            CurrentStatus = "Completed"
+                            AvailableStatusIDs = "1c8e4b7a-3d9f-4e2c-b6a8-5f3d9e1c7a42,8d4f2c6e-3a9b-4e7d-9c1f-5a2d9b6c3e47",
+                            CurrentStatus = "Pending Vendor Rework Feedback"
                         });
                 });
 
@@ -243,7 +246,7 @@ namespace ChangeX.DAL.Migrations
 
                     b.HasIndex("DefaultContactID");
 
-                    b.ToTable("Clients", (string)null);
+                    b.ToTable("Clients");
                 });
 
             modelBuilder.Entity("ChangeX.DAL.Entities.Detail", b =>
@@ -274,7 +277,7 @@ namespace ChangeX.DAL.Migrations
 
                     b.HasIndex("CRID");
 
-                    b.ToTable("Details", (string)null);
+                    b.ToTable("Details");
                 });
 
             modelBuilder.Entity("ChangeX.DAL.Entities.Invoice", b =>
@@ -300,7 +303,7 @@ namespace ChangeX.DAL.Migrations
 
                     b.HasIndex("CRID");
 
-                    b.ToTable("Invoices", (string)null);
+                    b.ToTable("Invoices");
                 });
 
             modelBuilder.Entity("ChangeX.DAL.Entities.Project", b =>
@@ -331,7 +334,7 @@ namespace ChangeX.DAL.Migrations
 
                     b.HasIndex("ClientID");
 
-                    b.ToTable("Projects", (string)null);
+                    b.ToTable("Projects");
                 });
 
             modelBuilder.Entity("ChangeX.DAL.Entities.User", b =>
@@ -366,7 +369,7 @@ namespace ChangeX.DAL.Migrations
 
                     b.HasIndex("ClientID");
 
-                    b.ToTable("Users", (string)null);
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("ChangeX.DAL.Entities.CR", b =>

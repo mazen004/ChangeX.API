@@ -41,7 +41,7 @@ namespace ChangeX.API.Controllers.Admin
         {
             try
             {
-                if (ID != currentUser.ClientId)
+                if (ID != currentUser.ClientId && currentUser.Role != "Admin")
                     return Forbid();
                 var result = await clientSercivies.GetByID(ID);
                 if (!result.Success)
